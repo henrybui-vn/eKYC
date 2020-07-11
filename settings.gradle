@@ -1,0 +1,2 @@
+rootProject.name='KYC'
+include ':app'

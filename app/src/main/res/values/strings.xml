@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">KYC</string>
+    <string name="label_verify_face_description">Verify three part of face</string>
+</resources>
