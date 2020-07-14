@@ -15,7 +15,7 @@ import java.util.*
 import java.util.concurrent.Executor
 import java.util.concurrent.Executors
 
-class CameraViewModel : ViewModel() {
+class FaceScanViewModel : ViewModel() {
     val takeImage = MutableLiveData<Bitmap>()
 
     private var isTakingPhoto = false

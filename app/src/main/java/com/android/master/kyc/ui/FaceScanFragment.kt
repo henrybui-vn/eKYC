@@ -1,43 +1,52 @@
 package com.android.master.kyc.ui
 
+import androidx.lifecycle.ViewModelProviders
 import android.os.Bundle
+import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.animation.AnimationUtils
 import androidx.annotation.NonNull
 import androidx.camera.core.*
 import androidx.camera.extensions.HdrImageCaptureExtender
 import androidx.camera.lifecycle.ProcessCameraProvider
 import androidx.core.content.ContextCompat
-import androidx.core.os.bundleOf
-import androidx.fragment.app.Fragment
 import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModelProvider
-import androidx.navigation.fragment.findNavController
+
 import com.android.master.kyc.R
 import com.android.master.kyc.ui.dialog.GuideDialogFragment
-import com.android.master.kyc.utils.*
+import com.android.master.kyc.utils.EXTRA
+import com.android.master.kyc.utils.TYPE_FACE_ID
 import com.google.common.util.concurrent.ListenableFuture
 import kotlinx.android.synthetic.main.camera_fragment.*
+import kotlinx.android.synthetic.main.camera_fragment.camera
+import kotlinx.android.synthetic.main.camera_fragment.captureImg
+import kotlinx.android.synthetic.main.camera_fragment.imgCaptured
+import kotlinx.android.synthetic.main.camera_fragment.layoutConfirmPhoto
+import kotlinx.android.synthetic.main.camera_fragment.layoutTakePhoto
+import kotlinx.android.synthetic.main.face_scan_fragment.*
 import java.util.concurrent.ExecutionException
 
-class CameraFragment : Fragment() {
-    private lateinit var viewModel: CameraViewModel
+class FaceScanFragment : Fragment() {
+    private val typeData: Int by lazy { arguments?.getInt(EXTRA) ?: TYPE_FACE_ID }
 
-    private val typeData: Int by lazy { arguments?.getInt(EXTRA) ?: 0 }
+    private lateinit var viewModel: FaceScanViewModel
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        return inflater.inflate(R.layout.camera_fragment, container, false)
+        return inflater.inflate(R.layout.face_scan_fragment, container, false)
     }
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         val dialog = GuideDialogFragment(typeData)
         dialog.show(requireFragmentManager(), "Guide")
-        viewModel = ViewModelProvider(this).get(CameraViewModel::class.java)
+
+        viewModel = ViewModelProvider(this).get(FaceScanViewModel::class.java)
 
         startCamera()
         initUI()
@@ -45,10 +54,10 @@ class CameraFragment : Fragment() {
     }
 
     private fun initUI() {
-        nextStep.setOnClickListener {
-            val bundle = bundleOf(EXTRA to TYPE_FACE_ID)
-            findNavController().navigate(R.id.faceScanFragment, bundle)
-        }
+        //Spin border
+        val rotation = AnimationUtils.loadAnimation(requireActivity(), R.anim.image_spin)
+        rotation.setFillAfter(true)
+        imgBorderCamera.startAnimation(rotation)
     }
 
     private fun observeChanges() {
@@ -79,7 +88,7 @@ class CameraFragment : Fragment() {
         val preview = Preview.Builder()
             .build()
         val cameraSelector = CameraSelector.Builder()
-            .requireLensFacing(CameraSelector.LENS_FACING_BACK)
+            .requireLensFacing(CameraSelector.LENS_FACING_FRONT)
             .build()
         val imageAnalysis = ImageAnalysis.Builder()
             .build()
@@ -108,6 +117,7 @@ class CameraFragment : Fragment() {
 
         captureImg.setOnClickListener(object : View.OnClickListener {
             override fun onClick(v: View?) {
+
                 viewModel.takePhoto()
             }
         })
