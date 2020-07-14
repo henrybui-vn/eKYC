@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/main_navigation"
-    app:startDestination="@id/faceScanFragment">
+    app:startDestination="@id/cameraFragment">
 
     <fragment
         android:id="@+id/cameraFragment"
@@ -20,5 +20,16 @@
         android:id="@+id/faceScanFragment"
         android:name="com.android.master.kyc.ui.FaceScanFragment"
         android:label="face_scan_fragment"
-        tools:layout="@layout/face_scan_fragment" />
+        tools:layout="@layout/face_scan_fragment">
+
+        <action
+            android:id="@+id/action_faceScanFragment_to_verifyDetailsFragment"
+            app:destination="@id/verifyDetailsFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/verifyDetailsFragment"
+        android:name="com.android.master.kyc.ui.VerifyDetailsFragment"
+        android:label="verify_details_fragment"
+        tools:layout="@layout/verify_details_fragment" />
 </navigation>

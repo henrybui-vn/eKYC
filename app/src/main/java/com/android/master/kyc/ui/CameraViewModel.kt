@@ -17,8 +17,10 @@ import java.util.concurrent.Executors
 
 class CameraViewModel : ViewModel() {
     val takeImage = MutableLiveData<Bitmap>()
-
+    var photo = ""
+    val photos = mutableListOf<String>()
     private var isTakingPhoto = false
+    var isTakingFrontPhoto = true
     private val executor: Executor = Executors.newSingleThreadExecutor()
     lateinit var imageCapture: ImageCapture
 
@@ -36,6 +38,7 @@ class CameraViewModel : ViewModel() {
             executor,
             object : ImageCapture.OnImageSavedCallback {
                 override fun onImageSaved(@NonNull outputFileResults: ImageCapture.OutputFileResults) {
+                    photo = file.path
                     cropImage(file.path)
                     isTakingPhoto = false
                 }

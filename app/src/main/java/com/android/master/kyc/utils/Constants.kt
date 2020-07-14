@@ -1,6 +1,10 @@
 package com.android.master.kyc.utils
 
-val EXTRA = "extra"
+// Extra
+val EXTRA_1 = "extra_1"
+val EXTRA_2 = "extra_2"
+val EXTRA_3 = "extra_3"
+
 val READ_TIMEOUT = 30L
 val WRITE_TIMEOUT = 30L
 val BASE_URL = "https://smp-vos-store.vsmart.net"

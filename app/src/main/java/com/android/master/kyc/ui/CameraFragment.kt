@@ -24,7 +24,7 @@ import java.util.concurrent.ExecutionException
 class CameraFragment : Fragment() {
     private lateinit var viewModel: CameraViewModel
 
-    private val typeData: Int by lazy { arguments?.getInt(EXTRA) ?: 0 }
+    private val typeData: Int by lazy { arguments?.getInt(EXTRA_1) ?: 0 }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -46,8 +46,20 @@ class CameraFragment : Fragment() {
 
     private fun initUI() {
         nextStep.setOnClickListener {
-            val bundle = bundleOf(EXTRA to TYPE_FACE_ID)
-            findNavController().navigate(R.id.faceScanFragment, bundle)
+            if (viewModel.isTakingFrontPhoto && typeData != TYPE_PASSPORT) {
+                viewModel.isTakingFrontPhoto = false
+
+                viewModel.photos.add(viewModel.photo)
+                layoutTakePhoto.visibility = View.VISIBLE
+                layoutConfirmPhoto.visibility = View.GONE
+            } else {
+                viewModel.photos.add(viewModel.photo)
+                val bundle = bundleOf(
+                    EXTRA_1 to typeData,
+                    EXTRA_2 to viewModel.photos
+                )
+                findNavController().navigate(R.id.faceScanFragment, bundle)
+            }
         }
     }
 

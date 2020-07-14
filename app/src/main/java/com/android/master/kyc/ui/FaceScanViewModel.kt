@@ -9,7 +9,6 @@ import androidx.camera.core.ImageCaptureException
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import java.io.File
-import java.io.FileOutputStream
 import java.text.SimpleDateFormat
 import java.util.*
 import java.util.concurrent.Executor
@@ -17,7 +16,7 @@ import java.util.concurrent.Executors
 
 class FaceScanViewModel : ViewModel() {
     val takeImage = MutableLiveData<Bitmap>()
-
+    var facePhoto = ""
     private var isTakingPhoto = false
     private val executor: Executor = Executors.newSingleThreadExecutor()
     lateinit var imageCapture: ImageCapture
@@ -36,6 +35,7 @@ class FaceScanViewModel : ViewModel() {
             executor,
             object : ImageCapture.OnImageSavedCallback {
                 override fun onImageSaved(@NonNull outputFileResults: ImageCapture.OutputFileResults) {
+                    facePhoto = file.path
                     cropImage(file.path)
                     isTakingPhoto = false
                 }
@@ -52,20 +52,8 @@ class FaceScanViewModel : ViewModel() {
         options.inPreferredConfig = Bitmap.Config.ARGB_8888
         val bitmap = BitmapFactory.decodeFile(imagePath, options)
 
-        val outputBitmap = Bitmap.createBitmap(
-            bitmap,
-            (bitmap.width * 0.1).toInt(),
-            (bitmap.height * 0.2).toInt(),
-            (bitmap.width * 0.8).toInt(),
-            (bitmap.height * 0.4).toInt()
-        )
-
         try {
-            takeImage.postValue(outputBitmap)
-
-            FileOutputStream(imagePath).use({ out ->
-                outputBitmap.compress(Bitmap.CompressFormat.PNG, 100, out)
-            })
+            takeImage.postValue(bitmap)
         } catch (e: Exception) {
             e.printStackTrace()
         }

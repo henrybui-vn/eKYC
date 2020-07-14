@@ -27,6 +27,11 @@ inline val Context.screenWidth: Int
 inline val View.screenWidth: Int
     get() = context!!.screenWidth
 
+inline val Context.screenHeight: Int
+    get() = Point().also { (getSystemService(Context.WINDOW_SERVICE) as WindowManager).defaultDisplay.getSize(it) }.y
+inline val View.screenHeight: Int
+    get() = context!!.screenHeight
+
 inline val Int.dp: Int
     get() = TypedValue.applyDimension(
         TypedValue.COMPLEX_UNIT_DIP, this.toFloat(), Resources.getSystem().displayMetrics).toInt()

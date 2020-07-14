@@ -69,12 +69,23 @@
         android:background="@color/colorPrimary"
         android:visibility="gone">
 
+        <TextView
+            android:id="@+id/retakePhoto"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:padding="20dp"
+            android:text="Chụp lại"
+            android:textColor="@android:color/white"
+            android:textSize="20sp"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="220dp"
             android:layout_marginHorizontal="20dp"
             android:layout_marginBottom="100dp"
-            app:cardCornerRadius="20dp"
+            app:cardCornerRadius="14dp"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
@@ -84,9 +95,19 @@
                 android:id="@+id/imgCaptured"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@drawable/bg_scan_preview_border"
                 android:scaleType="centerCrop" />
         </androidx.cardview.widget.CardView>
+
+        <ImageView
+            android:layout_width="match_parent"
+            android:layout_height="230dp"
+            android:layout_marginHorizontal="15dp"
+            android:layout_marginBottom="100dp"
+            android:background="@drawable/bg_scan_preview_border"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
 
         <TextView
             android:id="@+id/content"
@@ -109,6 +130,8 @@
             android:text="Tiếp tục"
             android:textAllCaps="false"
             android:textColor="@android:color/white"
+            android:textSize="20sp"
+            android:textStyle="bold"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent" />
