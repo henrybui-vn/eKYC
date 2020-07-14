@@ -3,6 +3,7 @@ package com.android.master.kyc.ui
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.os.Environment
+import android.util.Log
 import androidx.annotation.NonNull
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
@@ -20,11 +21,13 @@ class CameraViewModel : ViewModel() {
     var photo = ""
     val photos = mutableListOf<String>()
     private var isTakingPhoto = false
+    var takingPhotoFinished = false
     var isTakingFrontPhoto = true
     private val executor: Executor = Executors.newSingleThreadExecutor()
     lateinit var imageCapture: ImageCapture
 
     fun takePhoto() {
+        Log.d("QH", "Taking photo: " + isTakingPhoto)
         if (isTakingPhoto) {
             return
         }
@@ -39,8 +42,8 @@ class CameraViewModel : ViewModel() {
             object : ImageCapture.OnImageSavedCallback {
                 override fun onImageSaved(@NonNull outputFileResults: ImageCapture.OutputFileResults) {
                     photo = file.path
-                    cropImage(file.path)
                     isTakingPhoto = false
+                    cropImage(file.path)
                 }
 
                 override fun onError(@NonNull error: ImageCaptureException) {
@@ -57,10 +60,10 @@ class CameraViewModel : ViewModel() {
 
         val outputBitmap = Bitmap.createBitmap(
             bitmap,
-            (bitmap.width * 0.1).toInt(),
-            (bitmap.height * 0.2).toInt(),
-            (bitmap.width * 0.8).toInt(),
-            (bitmap.height * 0.4).toInt()
+            (bitmap.width * 0.15).toInt(),
+            (bitmap.height * 0.24).toInt(),
+            (bitmap.width * 0.7).toInt(),
+            (bitmap.height * 0.3).toInt()
         )
 
         try {

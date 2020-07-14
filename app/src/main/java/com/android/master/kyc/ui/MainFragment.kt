@@ -1,24 +1,29 @@
 package com.android.master.kyc.ui
 
-import android.content.Context
+import android.app.ActivityOptions
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.coordinatorlayout.widget.CoordinatorLayout
+import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.navigation.fragment.findNavController
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.android.master.kyc.R
-import com.android.zoomoutheader.MainListAdapter
-import com.nikhilpanju.fabfilter.main.ToolbarBehavior
+import com.android.master.kyc.model.Category
+import com.android.master.kyc.ui.adapter.MainListAdapter
+import com.android.master.kyc.utils.EXTRA_1
+import com.android.master.kyc.utils.EXTRA_2
 import kotlinx.android.synthetic.main.main_fragment.*
 
 var animationPlaybackSpeed: Double = 0.8
 
 class MainFragment : Fragment() {
 
-    private lateinit var viewModel: MainViewModel
+    lateinit var viewModel: MainViewModel
 
     private lateinit var mainListAdapter: MainListAdapter
 
@@ -42,11 +47,16 @@ class MainFragment : Fragment() {
 
     private fun initUI() {
         //Init UI
-        // Appbar behavior init
-        (appbar.layoutParams as CoordinatorLayout.LayoutParams).behavior = ToolbarBehavior()
-
-        // RecyclerView Init
-        mainListAdapter = MainListAdapter(requireContext())
+        val data = listOf(Category("Chứng minh thư, Thẻ căn cước"),
+            Category("Hộ chiếu"),
+            Category("Chứng minh thư quân đội"),
+            Category("Bằng lái xe")
+        )
+        mainListAdapter = MainListAdapter(
+            requireContext(),
+            data,
+            viewModel::clickItem
+        )
         recyclerView.adapter = mainListAdapter
         recyclerView.layoutManager = LinearLayoutManager(requireContext())
         recyclerView.setHasFixedSize(true)
@@ -54,7 +64,11 @@ class MainFragment : Fragment() {
     }
 
     private fun observeChanges() {
-
+        viewModel.typeData.observe(viewLifecycleOwner, Observer {
+            val intent = Intent(requireActivity(), GetPhotoActivity::class.java)
+            intent.putExtra(EXTRA_1, it)
+            startActivity(intent, ActivityOptions.makeSceneTransitionAnimation(requireActivity()).toBundle())
+        })
     }
 
     /**

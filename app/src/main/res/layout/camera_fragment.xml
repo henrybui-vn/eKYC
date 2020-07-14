@@ -33,7 +33,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginTop="80dp"
-            android:text="Title"
+            android:text="Mặt trước"
+            android:textStyle="bold"
             android:textColor="@color/colorPrimary"
             android:textSize="20sp"
             app:layout_constraintEnd_toEndOf="parent"
@@ -96,6 +97,13 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:scaleType="centerCrop" />
+
+            <ProgressBar
+                android:id="@+id/progressTakeImage"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:indeterminateTint="@color/colorPrimary" />
         </androidx.cardview.widget.CardView>
 
         <ImageView

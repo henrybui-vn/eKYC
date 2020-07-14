@@ -1,4 +1,4 @@
-package com.android.zoomoutheader
+package com.android.master.kyc.ui.adapter
 
 import android.animation.ValueAnimator
 import android.content.Context
@@ -12,21 +12,38 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.doOnLayout
 import androidx.core.view.doOnPreDraw
 import androidx.core.view.isVisible
-import androidx.recyclerview.widget.DiffUtil
+import androidx.databinding.DataBindingUtil
+import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Observer
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.android.master.kyc.R
+import com.android.master.kyc.databinding.ItemListBinding
 import com.android.master.kyc.extension.blendColors
 import com.android.master.kyc.extension.dp
 import com.android.master.kyc.extension.getValueAnimator
 import com.android.master.kyc.extension.screenWidth
+import com.android.master.kyc.model.Category
 import com.android.master.kyc.ui.animationPlaybackSpeed
-import com.nikhilpanju.fabfilter.main.MainListDiffUtil
 
-/** List Model. A sample model that only contains id */
-data class MainListModel(val id: Int)
+typealias ItemOnClick = (Int) -> Unit
 
-class MainListAdapter(context: Context) : RecyclerView.Adapter<MainListAdapter.ListViewHolder>() {
+class MainListAdapter(
+    private val context: Context,
+    private val list: List<Category>,
+    private val onClick: ItemOnClick
+) : RecyclerView.Adapter<MainListAdapter.ListViewHolder>() {
+
+    inner class ListViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+        val expandView: View = itemView.findViewById(R.id.expand_view)
+        val chevron: View = itemView.findViewById(R.id.chevron)
+        val cardContainer: View = itemView.findViewById(R.id.card_container)
+        val scaleContainer: View = itemView.findViewById(R.id.scale_container)
+        val listItemFg: View = itemView.findViewById(R.id.list_item_fg)
+
+        val categoryLD = MutableLiveData<String>()
+    }
 
     private val originalBg: Int by lazy {
         ContextCompat.getColor(context, R.color.list_item_bg_collapsed)
@@ -48,65 +65,63 @@ class MainListAdapter(context: Context) : RecyclerView.Adapter<MainListAdapter.L
     private var originalHeight = -1 // will be calculated dynamically
     private var expandedHeight = -1 // will be calculated dynamically
 
-    // filteredItems is a static field to simulate filtering of random items
-    private val filteredItems = intArrayOf(2, 5, 6, 8, 12)
-    private val modelList = List(20) { MainListModel(it) }
-    private val modelListFiltered = modelList.filter { it.id !in filteredItems }
-    private val adapterList: List<MainListModel> get() = if (isFiltered) modelListFiltered else modelList
-
-    /** Variable used to filter adapter items. 'true' if filtered and 'false' if not */
-    var isFiltered = false
-        set(value) {
-            field = value
-            val diff = MainListDiffUtil(
-                if (field) modelList else modelListFiltered,
-                if (field) modelListFiltered else modelList
-            )
-            DiffUtil.calculateDiff(diff).dispatchUpdatesTo(this)
-        }
-
     private val listItemExpandDuration: Long get() = (300L / animationPlaybackSpeed).toLong()
-    private val inflater: LayoutInflater = LayoutInflater.from(context)
 
     private lateinit var recyclerView: RecyclerView
-    private var expandedModel: MainListModel? = null
+    private var expandedModel: Category? = null
     private var isScaledDown = false
 
-    ///////////////////////////////////////////////////////////////////////////
-    // Methods
-    ///////////////////////////////////////////////////////////////////////////
+    override fun getItemCount(): Int = list.size
 
-    override fun getItemCount(): Int = adapterList.size
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ListViewHolder {
+        val lifecycleOwner = parent.context as LifecycleOwner
+        val binding = DataBindingUtil.inflate<ItemListBinding>(
+            LayoutInflater.from(parent.context),
+            R.layout.item_list,
+            parent,
+            false
+        )
+        val vh = ListViewHolder(binding.root)
 
-    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ListViewHolder =
-        ListViewHolder(inflater.inflate(R.layout.item_list, parent, false))
+        binding.let {
+            it.setLifecycleOwner(lifecycleOwner)
+            it.vh = vh
+        }
+
+        vh.categoryLD.observe(lifecycleOwner, Observer {
+            val user = list[vh.layoutPosition]
+            user.title = it ?: ""
+        })
+
+        return vh
+    }
+
 
     override fun onAttachedToRecyclerView(recyclerView: RecyclerView) {
         super.onAttachedToRecyclerView(recyclerView)
         this.recyclerView = recyclerView
     }
 
-    override fun onBindViewHolder(holder: ListViewHolder, position: Int) {
-        val model = adapterList[position]
+    override fun onBindViewHolder(holder: ListViewHolder, position: Int): Unit = with(holder) {
+        val model = list[position]
+
+        categoryLD.postValue(model.title)
 
         expandItem(holder, model == expandedModel, animate = false)
         scaleDownItem(holder, position, isScaledDown)
 
         holder.cardContainer.setOnClickListener {
             if (expandedModel == null) {
-
                 // expand clicked view
                 expandItem(holder, expand = true, animate = true)
                 expandedModel = model
             } else if (expandedModel == model) {
-
                 // collapse clicked view
                 expandItem(holder, expand = false, animate = true)
                 expandedModel = null
             } else {
-
                 // collapse previously expanded view
-                val expandedModelPosition = adapterList.indexOf(expandedModel!!)
+                val expandedModelPosition = list.indexOf(expandedModel!!)
                 val oldViewHolder =
                     recyclerView.findViewHolderForAdapterPosition(expandedModelPosition) as? ListViewHolder
                 if (oldViewHolder != null) expandItem(oldViewHolder, expand = false, animate = true)
@@ -115,6 +130,10 @@ class MainListAdapter(context: Context) : RecyclerView.Adapter<MainListAdapter.L
                 expandItem(holder, expand = true, animate = true)
                 expandedModel = model
             }
+        }
+
+        holder.expandView.setOnClickListener {
+            onClick(position)
         }
     }
 
@@ -129,7 +148,6 @@ class MainListAdapter(context: Context) : RecyclerView.Adapter<MainListAdapter.L
 
             animator.start()
         } else {
-
             // show expandView only if we have expandedHeight (onViewAttached)
             holder.expandView.isVisible = expand && expandedHeight >= 0
             setExpandProgress(holder, if (expand) 1f else 0f)
@@ -208,13 +226,12 @@ class MainListAdapter(context: Context) : RecyclerView.Adapter<MainListAdapter.L
     }
 
     private fun setScaleDownProgress(holder: ListViewHolder, position: Int, progress: Float) {
-        val itemExpanded = position >= 0 && adapterList[position] == expandedModel
+        val itemExpanded = position >= 0 && list[position] == expandedModel
         holder.cardContainer.layoutParams.apply {
             width =
                 ((if (itemExpanded) expandedWidth else originalWidth) * (1 - 0.1f * progress)).toInt()
             height =
                 ((if (itemExpanded) expandedHeight else originalHeight) * (1 - 0.1f * progress)).toInt()
-//            log("width=$width, height=$height [${"%.2f".format(progress)}]")
         }
         holder.cardContainer.requestLayout()
 
@@ -231,20 +248,7 @@ class MainListAdapter(context: Context) : RecyclerView.Adapter<MainListAdapter.L
         holder.listItemFg.alpha = progress
     }
 
-    /** Convenience method for calling from onBindViewHolder */
     private fun scaleDownItem(holder: ListViewHolder, position: Int, isScaleDown: Boolean) {
         setScaleDownProgress(holder, position, if (isScaleDown) 1f else 0f)
-    }
-
-    ///////////////////////////////////////////////////////////////////////////
-    // ViewHolder
-    ///////////////////////////////////////////////////////////////////////////
-
-    class ListViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
-        val expandView: View = itemView.findViewById(R.id.expand_view)
-        val chevron: View = itemView.findViewById(R.id.chevron)
-        val cardContainer: View = itemView.findViewById(R.id.card_container)
-        val scaleContainer: View = itemView.findViewById(R.id.scale_container)
-        val listItemFg: View = itemView.findViewById(R.id.list_item_fg)
     }
 }

@@ -1,10 +1,14 @@
 package com.android.master.kyc.net
 
-import com.android.master.kyc.net.model.AppResponse
+import com.android.master.kyc.net.model.response.PhotosResponse
+import com.android.master.kyc.net.model.request.PhotosRequest
 import io.reactivex.Observable
-import retrofit2.http.GET
+import retrofit2.http.*
 
 interface APIService {
-    @GET("/api/v1/device/themes/theme-widget")
-    fun checkImage(): Observable<AppResponse>
+    @POST("/ekyc/v1/images:annotate")
+    fun getDetailsFromPhotos(
+        @HeaderMap header: Map<String, String>,
+        @Body photosRequest: PhotosRequest
+    ): Observable<PhotosResponse>
 }

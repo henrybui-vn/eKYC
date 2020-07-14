@@ -58,7 +58,7 @@
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="40dp"
             android:layout_marginBottom="60dp"
-            android:text="Xin vui lòng\nĐặt giấy tờ vừa khung hình chữ nhật,\n chụp đủ ánh sáng và rõ nét"
+            android:text="Xin vui lòng\nĐưa khuôn mặt vừa khung hình,\n chụp đủ ánh sáng và rõ nét"
             android:textAlignment="center"
             android:textColor="@android:color/white"
             android:textSize="16sp"
@@ -134,6 +134,8 @@
             android:text="Tiếp tục"
             android:textAllCaps="false"
             android:textColor="@android:color/white"
+            android:textSize="20sp"
+            android:textStyle="bold"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent" />

@@ -4,6 +4,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.OnBackPressedCallback
 import androidx.annotation.NonNull
 import androidx.camera.core.*
 import androidx.camera.extensions.HdrImageCaptureExtender
@@ -42,33 +43,47 @@ class CameraFragment : Fragment() {
         startCamera()
         initUI()
         observeChanges()
+
+        val callback = object : OnBackPressedCallback(
+            true
+            /** true means that the callback is enabled */
+        ) {
+            override fun handleOnBackPressed() {
+                requireActivity().finish()
+            }
+        }
+        requireActivity().onBackPressedDispatcher.addCallback(viewLifecycleOwner, callback)
     }
 
     private fun initUI() {
         nextStep.setOnClickListener {
-            if (viewModel.isTakingFrontPhoto && typeData != TYPE_PASSPORT) {
-                viewModel.isTakingFrontPhoto = false
+            if (viewModel.takingPhotoFinished) {
+                if (viewModel.isTakingFrontPhoto && typeData != TYPE_PASSPORT) {
+                    viewModel.isTakingFrontPhoto = false
 
-                viewModel.photos.add(viewModel.photo)
-                layoutTakePhoto.visibility = View.VISIBLE
-                layoutConfirmPhoto.visibility = View.GONE
-            } else {
-                viewModel.photos.add(viewModel.photo)
-                val bundle = bundleOf(
-                    EXTRA_1 to typeData,
-                    EXTRA_2 to viewModel.photos
-                )
-                findNavController().navigate(R.id.faceScanFragment, bundle)
+                    title.text = "Mặt sau"
+                    viewModel.photos.add(viewModel.photo)
+                    layoutTakePhoto.visibility = View.VISIBLE
+                    layoutConfirmPhoto.visibility = View.GONE
+                    progressTakeImage.visibility = View.GONE
+                } else {
+                    viewModel.photos.add(viewModel.photo)
+                    val bundle = bundleOf(
+                        EXTRA_1 to typeData,
+                        EXTRA_2 to viewModel.photos
+                    )
+                    camera.releasePointerCapture()
+                    findNavController().navigate(R.id.faceScanFragment, bundle)
+                }
             }
         }
     }
 
     private fun observeChanges() {
         viewModel.takeImage.observe(viewLifecycleOwner, androidx.lifecycle.Observer {
+            progressTakeImage.visibility = View.GONE
+            viewModel.takingPhotoFinished = true
             imgCaptured.setImageBitmap(it)
-
-            layoutTakePhoto.visibility = View.GONE
-            layoutConfirmPhoto.visibility = View.VISIBLE
         })
     }
 
@@ -120,6 +135,10 @@ class CameraFragment : Fragment() {
 
         captureImg.setOnClickListener(object : View.OnClickListener {
             override fun onClick(v: View?) {
+                imgCaptured.setImageBitmap(null)
+                layoutTakePhoto.visibility = View.GONE
+                layoutConfirmPhoto.visibility = View.VISIBLE
+                progressTakeImage.visibility = View.VISIBLE
                 viewModel.takePhoto()
             }
         })

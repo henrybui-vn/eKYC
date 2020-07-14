@@ -12,6 +12,16 @@
         android:layout_height="match_parent"
         android:orientation="vertical">
 
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="20dp"
+            android:text="Thông tin cá nhân"
+            android:textAlignment="center"
+            android:textColor="@color/colorPrimary"
+            android:textSize="24sp"
+            android:textStyle="bold" />
+
         <RelativeLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -24,10 +34,11 @@
                 android:textColor="@color/colorPrimary" />
 
             <ProgressBar
+                android:id="@+id/pbPaper"
                 android:layout_width="30dp"
                 android:layout_height="30dp"
                 android:layout_alignParentEnd="true"
-                android:backgroundTint="@color/colorPrimary" />
+                android:indeterminateTint="@color/colorPrimary" />
 
             <TextView
                 android:id="@+id/tvPaper"
@@ -49,13 +60,14 @@
                 android:textColor="@color/colorPrimary" />
 
             <ProgressBar
+                android:id="@+id/pbIdentityID"
                 android:layout_width="30dp"
                 android:layout_height="30dp"
                 android:layout_alignParentEnd="true"
-                android:backgroundTint="@color/colorPrimary" />
+                android:indeterminateTint="@color/colorPrimary" />
 
             <TextView
-                android:id="@+id/tvCMND"
+                android:id="@+id/tvIdentityID"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentEnd="true"
@@ -74,10 +86,11 @@
                 android:textColor="@color/colorPrimary" />
 
             <ProgressBar
+                android:id="@+id/pbName"
                 android:layout_width="30dp"
                 android:layout_height="30dp"
                 android:layout_alignParentEnd="true"
-                android:backgroundTint="@color/colorPrimary" />
+                android:indeterminateTint="@color/colorPrimary" />
 
             <TextView
                 android:id="@+id/tvName"
@@ -99,13 +112,40 @@
                 android:textColor="@color/colorPrimary" />
 
             <ProgressBar
+                android:id="@+id/pbBirthday"
                 android:layout_width="30dp"
                 android:layout_height="30dp"
                 android:layout_alignParentEnd="true"
-                android:backgroundTint="@color/colorPrimary" />
+                android:indeterminateTint="@color/colorPrimary" />
 
             <TextView
                 android:id="@+id/tvBirthday"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:textColor="@color/colorPrimary" />
+        </RelativeLayout>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="20dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Quê quán"
+                android:textColor="@color/colorPrimary" />
+
+            <ProgressBar
+                android:id="@+id/pbBirthplace"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_alignParentEnd="true"
+                android:indeterminateTint="@color/colorPrimary" />
+
+            <TextView
+                android:id="@+id/tvBirthplace"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentEnd="true"
@@ -124,13 +164,14 @@
                 android:textColor="@color/colorPrimary" />
 
             <ProgressBar
+                android:id="@+id/pbIdentityAddress"
                 android:layout_width="30dp"
                 android:layout_height="30dp"
                 android:layout_alignParentEnd="true"
-                android:backgroundTint="@color/colorPrimary" />
+                android:indeterminateTint="@color/colorPrimary" />
 
             <TextView
-                android:id="@+id/tvHKTT"
+                android:id="@+id/tvIdentityAddress"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentEnd="true"
@@ -149,10 +190,11 @@
                 android:textColor="@color/colorPrimary" />
 
             <ProgressBar
+                android:id="@+id/pbNC"
                 android:layout_width="30dp"
                 android:layout_height="30dp"
                 android:layout_alignParentEnd="true"
-                android:backgroundTint="@color/colorPrimary" />
+                android:indeterminateTint="@color/colorPrimary" />
 
             <TextView
                 android:id="@+id/tvNC"
@@ -174,10 +216,11 @@
                 android:textColor="@color/colorPrimary" />
 
             <ProgressBar
+                android:id="@+id/pbNgC"
                 android:layout_width="30dp"
                 android:layout_height="30dp"
                 android:layout_alignParentEnd="true"
-                android:backgroundTint="@color/colorPrimary" />
+                android:indeterminateTint="@color/colorPrimary" />
 
             <TextView
                 android:id="@+id/tvNgC"
@@ -187,38 +230,72 @@
                 android:textColor="@color/colorPrimary" />
         </RelativeLayout>
 
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="20dp">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="So sánh khuôn mặt"
+                android:textColor="@color/colorPrimary" />
+
+            <ProgressBar
+                android:id="@+id/pbFace"
+                android:layout_width="30dp"
+                android:layout_height="30dp"
+                android:layout_alignParentEnd="true"
+                android:indeterminateTint="@color/colorPrimary" />
+
+            <TextView
+                android:id="@+id/tvFace"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:textColor="@color/colorPrimary" />
+        </RelativeLayout>
+
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="30dp"
             android:layout_weight="3"
             android:orientation="horizontal">
 
-
             <RelativeLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_marginHorizontal="10dp"
                 android:layout_weight="1">
+
                 <ImageView
                     android:id="@+id/imgFrontPhoto"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_gravity="center_horizontal" />
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_centerInParent="true"
+                    android:background="@drawable/bg_dialog"
+                    android:scaleType="centerCrop" />
             </RelativeLayout>
 
             <RelativeLayout
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_marginHorizontal="10dp"
                 android:layout_weight="1">
+
 
                 <ImageView
                     android:id="@+id/imgBackPhoto"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
-                    android:layout_gravity="center_horizontal" />
+                    android:layout_centerInParent="true"
+                    android:background="@drawable/bg_dialog"
+                    android:scaleType="centerCrop" />
             </RelativeLayout>
 
             <RelativeLayout
-                android:layout_width="wrap_content"
+                android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1">
 

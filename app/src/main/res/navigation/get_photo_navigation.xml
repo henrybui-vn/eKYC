@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    app:startDestination="@id/cameraFragment"
+    android:id="@+id/get_photo_navigation.xml">
+
+    <fragment
+        android:id="@+id/cameraFragment"
+        android:name="com.android.master.kyc.ui.CameraFragment"
+        tools:layout="@layout/camera_fragment"
+        android:label="camera_fragment">
+
+        <action
+            android:id="@+id/action_cameraFragment_to_faceScanFragment"
+            app:destination="@id/faceScanFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/faceScanFragment"
+        android:name="com.android.master.kyc.ui.FaceScanFragment"
+        tools:layout="@layout/face_scan_fragment"
+        android:label="face_scan_fragment">
+
+        <action
+            android:id="@+id/action_faceScanFragment_to_verifyDetailsFragment"
+            app:destination="@id/verifyDetailsFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/verifyDetailsFragment"
+        android:name="com.android.master.kyc.ui.VerifyDetailsFragment"
+        tools:layout="@layout/verify_details_fragment"
+        android:label="verify_details_fragment" />
+</navigation>
