@@ -2,42 +2,46 @@ package com.android.master.kyc.extension
 
 import android.animation.TimeInterpolator
 import android.animation.ValueAnimator
+import android.app.Activity
 import android.content.Context
 import android.content.res.Resources
-import android.graphics.Color
-import android.graphics.Point
+import android.graphics.*
+import android.hardware.Camera
+import android.media.Image
 import android.util.TypedValue
+import android.view.Surface
 import android.view.View
 import android.view.WindowManager
-import androidx.annotation.VisibleForTesting
-import com.android.master.kyc.net.APIService
-import com.android.master.kyc.utils.BASE_URL
-import com.android.master.kyc.utils.READ_TIMEOUT
-import com.android.master.kyc.utils.WRITE_TIMEOUT
-import okhttp3.OkHttpClient
-import okhttp3.logging.HttpLoggingInterceptor
-import org.koin.dsl.module
-import retrofit2.Retrofit
-import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
-import retrofit2.converter.gson.GsonConverterFactory
-import java.util.concurrent.TimeUnit
+import androidx.fragment.app.FragmentActivity
+import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
 
 inline val Context.screenWidth: Int
-    get() = Point().also { (getSystemService(Context.WINDOW_SERVICE) as WindowManager).defaultDisplay.getSize(it) }.x
+    get() = Point().also {
+        (getSystemService(Context.WINDOW_SERVICE) as WindowManager).defaultDisplay.getSize(
+            it
+        )
+    }.x
 inline val View.screenWidth: Int
     get() = context!!.screenWidth
 
 inline val Context.screenHeight: Int
-    get() = Point().also { (getSystemService(Context.WINDOW_SERVICE) as WindowManager).defaultDisplay.getSize(it) }.y
+    get() = Point().also {
+        (getSystemService(Context.WINDOW_SERVICE) as WindowManager).defaultDisplay.getSize(
+            it
+        )
+    }.y
 inline val View.screenHeight: Int
     get() = context!!.screenHeight
 
 inline val Int.dp: Int
     get() = TypedValue.applyDimension(
-        TypedValue.COMPLEX_UNIT_DIP, this.toFloat(), Resources.getSystem().displayMetrics).toInt()
+        TypedValue.COMPLEX_UNIT_DIP, this.toFloat(), Resources.getSystem().displayMetrics
+    ).toInt()
 inline val Float.dp: Float
     get() = TypedValue.applyDimension(
-        TypedValue.COMPLEX_UNIT_DIP, this, Resources.getSystem().displayMetrics)
+        TypedValue.COMPLEX_UNIT_DIP, this, Resources.getSystem().displayMetrics
+    )
 
 
 inline fun getValueAnimator(
@@ -65,30 +69,55 @@ fun blendColors(color1: Int, color2: Int, ratio: Float): Int {
     return Color.argb(a.toInt(), r.toInt(), g.toInt(), b.toInt())
 }
 
-@VisibleForTesting
-val apiModule = module {
-    fun provideHttpClient(): OkHttpClient {
-        return OkHttpClient.Builder()
-            .readTimeout(READ_TIMEOUT, TimeUnit.SECONDS)
-            .writeTimeout(WRITE_TIMEOUT, TimeUnit.SECONDS)
-            .addInterceptor(HttpLoggingInterceptor().setLevel(HttpLoggingInterceptor.Level.BODY))
-            .build()
-    }
+fun Image.toBitmap(): Bitmap {
+    val buffer = planes[0].buffer
+    buffer.rewind()
+    val bytes = ByteArray(buffer.capacity())
+    buffer.get(bytes)
+    return BitmapFactory.decodeByteArray(bytes, 0, bytes.size)
+}
 
-    fun provideRetrofit(client: OkHttpClient): Retrofit {
-        return Retrofit.Builder()
-            .addCallAdapterFactory(RxJava2CallAdapterFactory.create())
-            .addConverterFactory(GsonConverterFactory.create())
-            .baseUrl(BASE_URL)
-            .client(client)
-            .build()
-    }
+fun <T : ViewModel> createSharedViewModel(activity: FragmentActivity, clazz: Class<T>) =
+    ViewModelProvider(activity).get(clazz)
 
-    fun provideAppModelService(retrofit: Retrofit): APIService {
-        return retrofit.create(APIService::class.java)
-    }
 
-    single { provideHttpClient() }
-    single { provideRetrofit(get()) }
-    single { provideAppModelService(get()) }
+fun Activity.setCameraDisplayOrientation(
+    cameraId: Int, camera: Camera
+) {
+    val info = Camera.CameraInfo()
+    Camera.getCameraInfo(cameraId, info)
+    val rotation = this.windowManager.defaultDisplay.rotation
+    var degrees = 0
+    when (rotation) {
+        Surface.ROTATION_0 -> degrees = 0
+        Surface.ROTATION_90 -> degrees = 90
+        Surface.ROTATION_180 -> degrees = 180
+        Surface.ROTATION_270 -> degrees = 270
+    }
+    var result: Int
+    if (info.facing == Camera.CameraInfo.CAMERA_FACING_FRONT) {
+        result = (info.orientation + degrees) % 360
+        result = (360 - result) % 360 // compensate the mirror
+    } else {  // back-facing
+        result = (info.orientation - degrees + 360) % 360
+    }
+    camera.setDisplayOrientation(result)
+}
+
+fun Bitmap.rotate(rotate: Float): Bitmap {
+    val matrix = Matrix()
+
+    matrix.postRotate(rotate)
+
+    val scaledBitmap = Bitmap.createScaledBitmap(this, width, height, true)
+
+    return Bitmap.createBitmap(
+        scaledBitmap,
+        0,
+        0,
+        scaledBitmap.width,
+        scaledBitmap.height,
+        matrix,
+        true
+    )
 }

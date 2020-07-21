@@ -152,14 +152,17 @@
                 android:textColor="@color/colorPrimary" />
         </RelativeLayout>
 
-        <RelativeLayout
+        <androidx.constraintlayout.widget.ConstraintLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:padding="20dp">
 
             <TextView
+                android:id="@+id/tvHKTT"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent"
                 android:text="Hộ khẩu thường trú"
                 android:textColor="@color/colorPrimary" />
 
@@ -167,16 +170,20 @@
                 android:id="@+id/pbIdentityAddress"
                 android:layout_width="30dp"
                 android:layout_height="30dp"
-                android:layout_alignParentEnd="true"
-                android:indeterminateTint="@color/colorPrimary" />
+                android:indeterminateTint="@color/colorPrimary"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
 
             <TextView
                 android:id="@+id/tvIdentityAddress"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_alignParentEnd="true"
-                android:textColor="@color/colorPrimary" />
-        </RelativeLayout>
+                android:layout_marginStart="10dp"
+                app:layout_constraintStart_toEndOf="@id/tvHKTT"
+                android:textColor="@color/colorPrimary"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintTop_toTopOf="parent" />
+        </androidx.constraintlayout.widget.ConstraintLayout>
 
         <RelativeLayout
             android:layout_width="match_parent"
@@ -310,7 +317,8 @@
                     <ImageView
                         android:id="@+id/imgFacePhoto"
                         android:layout_width="match_parent"
-                        android:layout_height="match_parent" />
+                        android:layout_height="match_parent"
+                        android:scaleType="centerCrop" />
                 </androidx.cardview.widget.CardView>
             </RelativeLayout>
         </LinearLayout>

@@ -1,6 +1,7 @@
 package com.android.master.kyc.ui
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -16,6 +17,8 @@ import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import com.android.master.kyc.R
+import com.android.master.kyc.extension.createSharedViewModel
+import com.android.master.kyc.extension.setCameraDisplayOrientation
 import com.android.master.kyc.ui.dialog.GuideDialogFragment
 import com.android.master.kyc.utils.*
 import com.google.common.util.concurrent.ListenableFuture
@@ -23,7 +26,7 @@ import kotlinx.android.synthetic.main.camera_fragment.*
 import java.util.concurrent.ExecutionException
 
 class CameraFragment : Fragment() {
-    private lateinit var viewModel: CameraViewModel
+    private lateinit var viewModel: GetPhotoViewModel
 
     private val typeData: Int by lazy { arguments?.getInt(EXTRA_1) ?: 0 }
 
@@ -38,7 +41,7 @@ class CameraFragment : Fragment() {
         super.onActivityCreated(savedInstanceState)
         val dialog = GuideDialogFragment(typeData)
         dialog.show(requireFragmentManager(), "Guide")
-        viewModel = ViewModelProvider(this).get(CameraViewModel::class.java)
+        viewModel = createSharedViewModel(requireActivity(), GetPhotoViewModel::class.java)
 
         startCamera()
         initUI()
@@ -66,8 +69,10 @@ class CameraFragment : Fragment() {
                     layoutTakePhoto.visibility = View.VISIBLE
                     layoutConfirmPhoto.visibility = View.GONE
                     progressTakeImage.visibility = View.GONE
+                    viewModel.getDetailsFromPhotos(0)
                 } else {
                     viewModel.photos.add(viewModel.photo)
+                    viewModel.getDetailsFromPhotos(1)
                     val bundle = bundleOf(
                         EXTRA_1 to typeData,
                         EXTRA_2 to viewModel.photos
@@ -81,6 +86,7 @@ class CameraFragment : Fragment() {
 
     private fun observeChanges() {
         viewModel.takeImage.observe(viewLifecycleOwner, androidx.lifecycle.Observer {
+            Log.d("QH", "Init photo");
             progressTakeImage.visibility = View.GONE
             viewModel.takingPhotoFinished = true
             imgCaptured.setImageBitmap(it)

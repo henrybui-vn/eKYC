@@ -25,11 +25,11 @@
                 android:shape="ring"
                 app:cardCornerRadius="140dp">
 
-                <androidx.camera.view.PreviewView
-                    android:id="@+id/camera"
+                <FrameLayout
+                    android:id="@+id/cameraView"
                     android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:importantForAccessibility="no" />
+                    android:layout_height="450dp"
+                    android:layout_gravity="center" />
             </androidx.cardview.widget.CardView>
 
             <ImageView
@@ -43,12 +43,14 @@
 
         <TextView
             android:id="@+id/title"
-            android:layout_width="wrap_content"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="80dp"
-            android:text="Title"
-            android:textColor="@color/colorPrimary"
+            android:layout_marginHorizontal="60dp"
+            android:layout_marginTop="60dp"
+            android:textAlignment="center"
+            android:textColor="@android:color/white"
             android:textSize="20sp"
+            android:textStyle="bold"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent" />

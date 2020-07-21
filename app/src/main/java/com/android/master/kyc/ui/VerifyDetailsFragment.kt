@@ -10,20 +10,13 @@ import android.view.ViewGroup
 import androidx.activity.OnBackPressedCallback
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
-import androidx.lifecycle.ViewModelProvider
 import com.android.master.kyc.R
-import com.android.master.kyc.utils.EXTRA_1
-import com.android.master.kyc.utils.EXTRA_2
-import com.android.master.kyc.utils.EXTRA_3
-import com.android.master.kyc.utils.TYPE_ID_CARD
+import com.android.master.kyc.extension.createSharedViewModel
+import com.android.master.kyc.net.model.response.PhotoResponse
 import kotlinx.android.synthetic.main.verify_details_fragment.*
 
 class VerifyDetailsFragment : Fragment() {
-    private lateinit var viewModel: VerifyDetailsViewModel
-
-    private val typeData: Int by lazy { arguments?.getInt(EXTRA_1) ?: TYPE_ID_CARD }
-    private val photos by lazy { arguments?.getStringArrayList(EXTRA_2) }
-    private val facePhoto by lazy { arguments?.getString(EXTRA_3) ?: "" }
+    private lateinit var viewModel: GetPhotoViewModel
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -34,7 +27,7 @@ class VerifyDetailsFragment : Fragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-        viewModel = ViewModelProvider(this).get(VerifyDetailsViewModel::class.java)
+        viewModel = createSharedViewModel(requireActivity(), GetPhotoViewModel::class.java)
 
         initUI()
         observeChanges()
@@ -56,84 +49,105 @@ class VerifyDetailsFragment : Fragment() {
         imgFrontPhoto.clipToOutline = true
         imgBackPhoto.clipToOutline = true
 
-        if (photos?.size == 1) {
-            val bitmap = BitmapFactory.decodeFile(photos?.get(0), options)
-            imgFrontPhoto.setImageBitmap(bitmap)
+        if (viewModel.photos.size == 2) {
+            imgFrontPhoto.setImageBitmap(viewModel.photos.get(0))
             imgBackPhoto.visibility = View.GONE
-        } else if (photos?.size == 2) {
-            val bitmapFront = BitmapFactory.decodeFile(photos?.get(0), options)
-            imgFrontPhoto.setImageBitmap(bitmapFront)
-            val bitmapBack = BitmapFactory.decodeFile(photos?.get(1), options)
-            imgBackPhoto.setImageBitmap(bitmapBack)
+            imgFacePhoto.setImageBitmap(viewModel.photos.get(1))
+        } else if (viewModel.photos.size == 3) {
+            imgFrontPhoto.setImageBitmap(viewModel.photos.get(0))
+            imgBackPhoto.setImageBitmap(viewModel.photos.get(1))
+            imgFacePhoto.setImageBitmap(viewModel.photos.get(2))
         } else {
             imgFrontPhoto.visibility = View.GONE
             imgBackPhoto.visibility = View.GONE
         }
-
-        val bitmap = BitmapFactory.decodeFile(facePhoto, options)
-        imgFacePhoto.setImageBitmap(bitmap)
-
-        viewModel.getDetailsFromPhotos(photos!!.get(0), photos!!.get(1), facePhoto)
     }
 
     @SuppressLint("SetTextI18n")
     private fun observeChanges() {
-        viewModel.responses.observe(viewLifecycleOwner, Observer { it ->
-            try {
-                pbPaper.visibility = View.GONE
-                pbIdentityID.visibility = View.GONE
-                pbName.visibility = View.GONE
-                pbBirthday.visibility = View.GONE
-                pbBirthplace.visibility = View.GONE
-                pbIdentityAddress.visibility = View.GONE
-                pbNgC.visibility = View.GONE
-                pbNC.visibility = View.GONE
-                pbFace.visibility = View.GONE
+        viewModel.photosResponse.observe(viewLifecycleOwner, Observer {
+            if (viewModel.responses.size == 3) {
+                viewModel.isInitVerifyDetailsData = true
+                fetchData(it.response)
+            }
+        })
 
-                it.response.forEach {
-                    it.identityCard?.forEach {
-                        val field = it.field
-                        val description = it.description
+        viewModel.isVerifyDetailsFragment = true
 
-                        when (field) {
-                            "identityId" -> {
-                                tvIdentityID.text = description
-                            }
-                            "identityName" -> {
-                                tvName.text = description
-                            }
-                            "identityBirthday" -> {
-                                tvBirthday.text = description
-                            }
-                            "identityBirthplace" -> {
-                                tvBirthplace.text = description
-                            }
-                            "identityAddress" -> {
-                                tvIdentityAddress.text = description
-                            }
-                            "identityIssueDate" -> {
-                                tvNgC.text = description
-                            }
-                            "identityIssuePlace" -> {
-                                tvNC.text = description
-                            }
+        if (viewModel.responses.size == 3 && !viewModel.isInitVerifyDetailsData) {
+            fetchData(viewModel.responses)
+        }
+    }
+
+    @SuppressLint("SetTextI18n")
+    private fun fetchData(datas: List<PhotoResponse>) {
+        try {
+            if (datas == null) {
+                return
+            }
+
+            datas.forEach {
+                it.identityCard?.forEach {
+                    pbPaper.visibility = View.GONE
+
+                    val field = it.field
+                    val description = it.description
+
+                    when (field) {
+                        "identityId" -> {
+                            tvIdentityID.text = description
+                            pbIdentityID.visibility = View.GONE
                         }
-                    }
-
-
-                    it.face?.forEach {
-                        val field = it.field
-
-                        when (field) {
-                            "faceBounds" -> {
-                                tvFace.text = String.format("%.2f", (it.confidence * 100)) + "%"
-                            }
+                        "identityName" -> {
+                            tvName.text = description
+                            pbName.visibility = View.GONE
+                        }
+                        "identityBirthday" -> {
+                            tvBirthday.text = description
+                            pbBirthday.visibility = View.GONE
+                        }
+                        "identityBirthplace" -> {
+                            tvBirthplace.text = description
+                            pbBirthplace.visibility = View.GONE
+                        }
+                        "identityAddress" -> {
+                            tvIdentityAddress.text = description
+                            pbIdentityAddress.visibility = View.GONE
+                        }
+                        "identityIssueDate" -> {
+                            tvNgC.text = description
+                            pbNgC.visibility = View.GONE
+                        }
+                        "identityIssuePlace" -> {
+                            tvNC.text = description
+                            pbNC.visibility = View.GONE
                         }
                     }
                 }
-            } catch (e: Exception) {
-                e.printStackTrace()
+
+
+                it.face?.forEach {
+                    val field = it.field
+
+                    when (field) {
+                        "faceBounds" -> {
+                            tvFace.text = String.format("%.2f", (it.confidence * 100)) + "%"
+                        }
+                    }
+                    pbFace.visibility = View.GONE
+                }
             }
-        })
+
+            pbIdentityID.visibility = View.GONE
+            pbName.visibility = View.GONE
+            pbBirthday.visibility = View.GONE
+            pbBirthplace.visibility = View.GONE
+            pbIdentityAddress.visibility = View.GONE
+            pbNgC.visibility = View.GONE
+            pbNC.visibility = View.GONE
+            pbFace.visibility = View.GONE
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 }

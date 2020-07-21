@@ -1,7 +1,7 @@
 package com.android.master.kyc
 
 import android.app.Application
-import com.android.master.kyc.extension.apiModule
+import com.android.master.kyc.di.apiModule
 import org.koin.android.ext.koin.androidContext
 import org.koin.core.context.startKoin
 
