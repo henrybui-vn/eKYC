@@ -14,13 +14,13 @@ import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.LifecycleOwner
-import androidx.lifecycle.ViewModelProvider
 import androidx.navigation.fragment.findNavController
 import com.android.master.kyc.R
 import com.android.master.kyc.extension.createSharedViewModel
-import com.android.master.kyc.extension.setCameraDisplayOrientation
 import com.android.master.kyc.ui.dialog.GuideDialogFragment
-import com.android.master.kyc.utils.*
+import com.android.master.kyc.utils.EXTRA_1
+import com.android.master.kyc.utils.EXTRA_2
+import com.android.master.kyc.utils.TYPE_PASSPORT
 import com.google.common.util.concurrent.ListenableFuture
 import kotlinx.android.synthetic.main.camera_fragment.*
 import java.util.concurrent.ExecutionException

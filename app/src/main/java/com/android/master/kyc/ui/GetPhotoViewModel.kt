@@ -11,6 +11,7 @@ import android.util.Log
 import androidx.camera.core.ImageCapture
 import androidx.camera.core.ImageCaptureException
 import androidx.camera.core.ImageProxy
+import androidx.camera.core.VideoCapture
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -61,7 +62,7 @@ class GetPhotoViewModel : ViewModel() {
     var isTakingFrontPhoto = true
     private val executor: Executor = Executors.newSingleThreadExecutor()
     lateinit var imageCapture: ImageCapture
-    var videoRecorder = MediaRecorder()
+    lateinit var videoCapture: VideoCapture
 
     val apiService: APIService by KoinJavaComponent.inject(APIService::class.java)
 
@@ -143,7 +144,6 @@ class GetPhotoViewModel : ViewModel() {
     }
 
     fun takePhoto() {
-        Log.d("QH", "Taking photo: " + isTakingPhoto)
         if (isTakingPhoto) {
             return
         }
@@ -163,69 +163,6 @@ class GetPhotoViewModel : ViewModel() {
                 exception.printStackTrace()
             }
         })
-    }
-
-    fun takeMultipleFacePhotos(file: File) {
-        viewModelScope.launch {
-            withContext(Dispatchers.IO) {
-                recording = true
-                videoRecorder.start()
-//                recordVideos(file)
-                delay(2500)
-                videoRecorder.stop()
-                getFramesFromVideo(file)
-            }
-        }
-    }
-
-    fun getFramesFromVideo(file: File) {
-        try {
-            var action = ""
-
-            scanWaitForRequest.postValue(true)
-
-
-            when (faceStep) {
-                FACE_SMILE -> action = "SMILE"
-                FACE_CLOSE_EYE -> action = "CLOSE_LEFT_EYE"
-                FACE_NORMAL -> action = "NORMAL"
-            }
-
-            val images = mutableListOf<Image>()
-            val retriever = MediaMetadataRetriever()
-
-            retriever.setDataSource(file.getAbsolutePath());
-
-            for (i in 1..15) {
-                val bitmap =
-                    retriever.getFrameAtTime(
-                        (200000 / i).toLong(),
-                        MediaMetadataRetriever.OPTION_CLOSEST
-                    )
-                images.add(
-                    Image(
-                        getBase64FromImage(bitmap)
-                    )
-                )
-            }
-
-            if (action != "NORMAL") {
-                checkFace(FaceRequest(action, images))
-            } else {
-                val bitmap =
-                    retriever.getFrameAtTime(
-                        (1000000).toLong(),
-                        MediaMetadataRetriever.OPTION_CLOSEST
-                    )
-                photos.add(bitmap)
-                scanWaitForRequest.postValue(false)
-                takePhotoImage.postValue(bitmap)
-            }
-
-            file.delete()
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
     }
 
     @SuppressLint("CheckResult")
@@ -255,22 +192,30 @@ class GetPhotoViewModel : ViewModel() {
         scanWaitForRequest.postValue(false)
     }
 
-    fun takeFacePhoto() {
-//        imageCapture.takePicture(executor, object : ImageCapture.OnImageCapturedCallback() {
-//            @SuppressLint("UnsafeExperimentalUsageError")
-//            override fun onCaptureSuccess(image: ImageProxy) {
-//                Log.d("QH", "Capture success")
-//                val outputBitmap = image.image?.toBitmap()
-//                photo = outputBitmap
-//                takePhotoImage.postValue(outputBitmap)
-//                photos.add(photo)
-//            }
-//
-//            override fun onError(exception: ImageCaptureException) {
-//                super.onError(exception)
-//                exception.printStackTrace()
-//            }
-//        })
+    @SuppressLint("RestrictedApi")
+    fun recordVideo(file: File) {
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                recording = true
+
+                println("Start")
+                videoCapture.startRecording(file, executor, object : VideoCapture.OnVideoSavedCallback {
+                    override fun onVideoSaved(file: File) {
+                        println("onVideoSaved")
+                        getFramesFromVideo(file)
+                    }
+
+                    override fun onError(videoCaptureError: Int, message: String, cause: Throwable?) {
+                        scanWaitForRequest.postValue(false)
+                        scanFaceResult.postValue(0f)
+                    }
+
+                })
+                delay(2500)
+                videoCapture.stopRecording()
+                println("Stop")
+            }
+        }
     }
 
     fun cropImage(bitmap: Bitmap?) {
@@ -292,9 +237,53 @@ class GetPhotoViewModel : ViewModel() {
         }
     }
 
-    /** Create a file Uri for saving an image or video */
-    private fun getOutputMediaFileUri(type: Int): Uri {
-        return Uri.fromFile(getOutputMediaFile())
+    fun getFramesFromVideo(file: File) {
+        try {
+            var action = ""
+
+            scanWaitForRequest.postValue(true)
+
+            when (faceStep) {
+                FACE_SMILE -> action = "SMILE"
+                FACE_CLOSE_EYE -> action = "CLOSE_LEFT_EYE"
+                FACE_NORMAL -> action = "NORMAL"
+            }
+
+            val images = mutableListOf<Image>()
+            val retriever = MediaMetadataRetriever()
+
+            retriever.setDataSource(file.getAbsolutePath());
+
+            for (i in 1..15) {
+                val bitmap =
+                    retriever.getFrameAtTime(
+                        (2000000 / i).toLong(),
+                        MediaMetadataRetriever.OPTION_CLOSEST
+                    )
+                images.add(
+                    Image(
+                        getBase64FromImage(bitmap)
+                    )
+                )
+            }
+
+            if (action != "NORMAL") {
+                checkFace(FaceRequest(action, images))
+            } else {
+                val bitmap =
+                    retriever.getFrameAtTime(
+                        (1000000).toLong(),
+                        MediaMetadataRetriever.OPTION_CLOSEST
+                    )
+                photos.add(bitmap)
+                scanWaitForRequest.postValue(false)
+                takePhotoImage.postValue(bitmap)
+            }
+
+            file.delete()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
     }
 
     /** Create a File for saving an image or video */
