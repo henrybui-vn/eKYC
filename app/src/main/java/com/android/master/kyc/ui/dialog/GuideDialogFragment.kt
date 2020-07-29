@@ -7,6 +7,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.RelativeLayout
+import android.widget.TextView
 import android.widget.VideoView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.AppCompatButton
@@ -14,9 +15,10 @@ import androidx.appcompat.widget.AppCompatImageView
 import androidx.fragment.app.DialogFragment
 import com.android.master.kyc.R
 import com.android.master.kyc.utils.*
+import kotlinx.android.synthetic.main.dialog_guide.*
 
 
-class GuideDialogFragment(private val typeData: Int) : DialogFragment() {
+class GuideDialogFragment(private val typeData: Int, private val notify: String = "") : DialogFragment() {
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         retainInstance = true
         val context: Context = requireActivity()
@@ -29,6 +31,7 @@ class GuideDialogFragment(private val typeData: Int) : DialogFragment() {
         val imgGuide = view.findViewById<AppCompatImageView>(R.id.img_guide)
         val videoGuide = view.findViewById<VideoView>(R.id.video_guide)
         val btClose = view.findViewById<AppCompatButton>(R.id.bt_close_guide)
+        val tvNotify = view.findViewById<TextView>(R.id.tvNotify)
         val layoutLoading = view.findViewById<RelativeLayout>(R.id.layout_loading)
 
         when (typeData) {
@@ -63,6 +66,7 @@ class GuideDialogFragment(private val typeData: Int) : DialogFragment() {
                 imgGuide.visibility = View.GONE
                 videoGuide.visibility = View.GONE
                 layoutLoading.visibility = View.VISIBLE
+                tvNotify.text = notify
                 isCancelable = false
             }
         }

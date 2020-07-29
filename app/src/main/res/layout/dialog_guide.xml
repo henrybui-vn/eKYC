@@ -50,12 +50,12 @@
             android:indeterminateTint="@color/colorPrimary" />
 
         <TextView
+            android:id="@+id/tvNotify"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_below="@id/pb_dialog"
             android:layout_centerHorizontal="true"
             android:layout_marginTop="20dp"
-            android:text="Vui lòng đợi kiểm tra khuôn mặt"
             android:textColor="@color/colorPrimary" />
     </RelativeLayout>
 

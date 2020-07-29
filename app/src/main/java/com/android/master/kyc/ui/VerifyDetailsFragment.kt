@@ -13,6 +13,7 @@ import androidx.lifecycle.Observer
 import com.android.master.kyc.R
 import com.android.master.kyc.extension.createSharedViewModel
 import com.android.master.kyc.net.model.response.PhotoResponse
+import com.android.master.kyc.net.model.response.VerifyFaceResponse
 import kotlinx.android.synthetic.main.verify_details_fragment.*
 
 class VerifyDetailsFragment : Fragment() {
@@ -65,24 +66,29 @@ class VerifyDetailsFragment : Fragment() {
 
     @SuppressLint("SetTextI18n")
     private fun observeChanges() {
-        viewModel.photosResponse.observe(viewLifecycleOwner, Observer {
-            if (viewModel.responses.size == 3) {
+        viewModel.verifyIdentityCard.observe(viewLifecycleOwner, Observer {
+            if (viewModel.verifyIdentityCardResponses.size == 2) {
                 viewModel.isInitVerifyDetailsData = true
-                fetchData(it.response)
+                fetchIdentityCardData(it.response)
+            }
+        })
+
+        viewModel.verifyFace.observe(viewLifecycleOwner, Observer {
+            if (it.responses.size > 0) {
+                fetchVerifyFaceData(it)
             }
         })
 
         viewModel.isVerifyDetailsFragment = true
 
-        if (viewModel.responses.size == 3 && !viewModel.isInitVerifyDetailsData) {
-            fetchData(viewModel.responses)
+        if (viewModel.verifyIdentityCardResponses.size == 2 && !viewModel.isInitVerifyDetailsData) {
+            fetchIdentityCardData(viewModel.verifyIdentityCardResponses)
         }
     }
 
-    @SuppressLint("SetTextI18n")
-    private fun fetchData(datas: List<PhotoResponse>) {
+    private fun fetchIdentityCardData(datas: List<PhotoResponse>) {
         try {
-            if (datas == null) {
+            if (datas.size == 0) {
                 return
             }
 
@@ -126,16 +132,16 @@ class VerifyDetailsFragment : Fragment() {
                 }
 
 
-                it.face?.forEach {
-                    val field = it.field
-
-                    when (field) {
-                        "faceBounds" -> {
-                            tvFace.text = String.format("%.2f", (it.confidence * 100)) + "%"
-                        }
-                    }
-                    pbFace.visibility = View.GONE
-                }
+//                it.face?.forEach {
+//                    val field = it.field
+//
+//                    when (field) {
+//                        "faceBounds" -> {
+//                            tvFace.text = String.format("%.2f", (it.confidence * 100)) + "%"
+//                        }
+//                    }
+//                    pbFace.visibility = View.GONE
+//                }
             }
 
             pbIdentityID.visibility = View.GONE
@@ -145,9 +151,15 @@ class VerifyDetailsFragment : Fragment() {
             pbIdentityAddress.visibility = View.GONE
             pbNgC.visibility = View.GONE
             pbNC.visibility = View.GONE
-            pbFace.visibility = View.GONE
         } catch (e: Exception) {
             e.printStackTrace()
         }
+    }
+
+    @SuppressLint("SetTextI18n")
+    private fun fetchVerifyFaceData(faceData: VerifyFaceResponse) {
+        val data = faceData.responses.first().faceVerificationResults.confidence
+        tvFace.text = String.format("%.2f", (data * 100)) + "%"
+        pbFace.visibility = View.GONE
     }
 }

@@ -24,13 +24,8 @@ import com.android.master.kyc.extension.createSharedViewModel
 import com.android.master.kyc.ui.dialog.GuideDialogFragment
 import com.android.master.kyc.utils.*
 import com.google.common.util.concurrent.ListenableFuture
-import kotlinx.android.synthetic.main.camera_fragment.*
 import kotlinx.android.synthetic.main.camera_fragment.captureImg
-import kotlinx.android.synthetic.main.camera_fragment.imgCaptured
-import kotlinx.android.synthetic.main.camera_fragment.layoutConfirmPhoto
-import kotlinx.android.synthetic.main.camera_fragment.layoutTakePhoto
 import kotlinx.android.synthetic.main.face_scan_fragment.*
-import kotlinx.android.synthetic.main.face_scan_fragment.nextStep
 import kotlinx.android.synthetic.main.face_scan_fragment.title
 import java.util.concurrent.ExecutionException
 
@@ -41,9 +36,6 @@ class FaceScanFragment : Fragment() {
 
     private lateinit var viewModel: GetPhotoViewModel
 
-    private var mCamera: Camera? = null
-    private var mPreview: CameraPreview? = null
-
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -53,8 +45,8 @@ class FaceScanFragment : Fragment() {
 
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
-//        val dialog = GuideDialogFragment(TYPE_FACE_ID)
-//        dialog.show(requireFragmentManager(), "Guide")
+        val dialog = GuideDialogFragment(TYPE_FACE_ID)
+        dialog.show(requireFragmentManager(), "Guide")
 
         viewModel = createSharedViewModel(requireActivity(), GetPhotoViewModel::class.java)
 
@@ -73,16 +65,6 @@ class FaceScanFragment : Fragment() {
         rotation.setFillAfter(true)
         imgBorderCamera.startAnimation(rotation)
 
-        nextStep.setOnClickListener {
-            val bundle = bundleOf(
-                EXTRA_1 to typeData,
-                EXTRA_2 to photos,
-                EXTRA_3 to viewModel.facePhoto
-            )
-
-            findNavController().navigate(R.id.verifyDetailsFragment, bundle)
-        }
-
         captureImg.setOnClickListener(object : View.OnClickListener {
             override fun onClick(v: View?) {
                 if (viewModel.recording) {
@@ -99,19 +81,22 @@ class FaceScanFragment : Fragment() {
     }
 
     private fun observeChanges() {
-        val dialog = GuideDialogFragment(TYPE_LOADING)
+        val dialog = GuideDialogFragment(TYPE_LOADING, "Vui lòng đợi kiểm tra khuôn mặt")
 
         viewModel.takePhotoImage.observe(viewLifecycleOwner, Observer {
-            title.text = "Hoàn thành quét khuôn mặt"
-            imgCaptured.setImageBitmap(it)
-
-            layoutTakePhoto.visibility = View.GONE
-            layoutConfirmPhoto.visibility = View.VISIBLE
-
+            notifyUser()
             viewModel.getDetailsFromPhotos(2)
+
+            val bundle = bundleOf(
+                EXTRA_1 to typeData,
+                EXTRA_2 to photos,
+                EXTRA_3 to viewModel.facePhoto
+            )
+
+            findNavController().navigate(R.id.verifyDetailsFragment, bundle)
         })
 
-        viewModel.scanWaitForRequest.observe(viewLifecycleOwner, Observer {
+        viewModel.scanFaceWaitForRequest.observe(viewLifecycleOwner, Observer {
             if (it) {
                 dialog.show(requireFragmentManager(), "Guide")
             } else {
@@ -121,7 +106,7 @@ class FaceScanFragment : Fragment() {
 
         viewModel.scanFaceResult.observe(viewLifecycleOwner, Observer {
             captureImg.visibility = View.VISIBLE
-            if (it == 0f) {
+            if (it < 0f) {
                 Toast.makeText(requireContext(), "Quét lỗi vui lòng quét lại!", Toast.LENGTH_LONG)
                     .show()
             } else {
@@ -140,12 +125,12 @@ class FaceScanFragment : Fragment() {
         }
     }
 
-    fun notifyUser() {
+    private fun notifyUser() {
         var content = ""
         when (viewModel.faceStep) {
             FACE_SMILE -> content = "Quét thành công vui lòng quét bước tiếp theo!"
             FACE_CLOSE_EYE -> content = "Quét thành công vui lòng quét bước tiếp theo!"
-            FACE_NORMAL -> content = "Quét hoàn thành vui lòng chọn tiếp tục để nhận kết quả!"
+            FACE_NORMAL -> content = "Quét hoàn thành!"
         }
         Toast.makeText(requireContext(), content, Toast.LENGTH_SHORT).show()
     }

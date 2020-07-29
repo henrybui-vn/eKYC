@@ -3,8 +3,6 @@ package com.android.master.kyc.ui
 import android.annotation.SuppressLint
 import android.graphics.Bitmap
 import android.media.MediaMetadataRetriever
-import android.media.MediaRecorder
-import android.net.Uri
 import android.os.Environment
 import android.util.Base64
 import android.util.Log
@@ -19,13 +17,11 @@ import com.android.master.kyc.extension.toBitmap
 import com.android.master.kyc.model.Features
 import com.android.master.kyc.model.Image
 import com.android.master.kyc.net.APIService
-import com.android.master.kyc.net.model.request.FaceRequest
-import com.android.master.kyc.net.model.request.PhotoRequest
-import com.android.master.kyc.net.model.request.PhotosRequest
-import com.android.master.kyc.net.model.request.ScanFaceRequest
+import com.android.master.kyc.net.model.request.*
 import com.android.master.kyc.net.model.response.PhotoResponse
 import com.android.master.kyc.net.model.response.PhotosResponse
 import com.android.master.kyc.net.model.response.ScanFaceResponse
+import com.android.master.kyc.net.model.response.VerifyFaceResponse
 import com.android.master.kyc.utils.*
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.schedulers.Schedulers
@@ -46,14 +42,16 @@ class GetPhotoViewModel : ViewModel() {
     val takeImage = MutableLiveData<Bitmap>()
     val takePhotoImage = MutableLiveData<Bitmap>()
     val scanFaceResult = MutableLiveData<Float>()
-    val scanWaitForRequest = MutableLiveData<Boolean>()
+    val scanIdentificationWaitForRequest = MutableLiveData<Boolean>()
+    val scanFaceWaitForRequest = MutableLiveData<Boolean>()
 
     var photo: Bitmap? = null
     var facePhoto: Bitmap? = null
     var faceStep = FACE_SMILE
     var recording = false
     val photos = mutableListOf<Bitmap?>()
-    val responses = mutableListOf<PhotoResponse>()
+    val verifyIdentityCardResponses = mutableListOf<PhotoResponse>()
+    val verifyFaceResponse = VerifyFaceResponse()
 
     var isVerifyDetailsFragment = false
     var isInitVerifyDetailsData = false
@@ -66,51 +64,75 @@ class GetPhotoViewModel : ViewModel() {
 
     val apiService: APIService by KoinJavaComponent.inject(APIService::class.java)
 
-
-    val photosResponse = MutableLiveData<PhotosResponse>()
+    val verifyIdentityCard = MutableLiveData<PhotosResponse>()
+    val verifyFace = MutableLiveData<VerifyFaceResponse>()
 
     fun getDetailsFromPhotos(position: Int) {
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
-                val requests = mutableListOf<PhotoRequest>()
+                val identityCardRequests = mutableListOf<PhotoRequest>()
                 when (position) {
                     0 -> {
-                        requests.add(
+                        identityCardRequests.add(
                             PhotoRequest(
                                 Features(IDENTITY_CARD_DETECTION),
                                 Image(getBase64FromImage(photos.get(position)))
                             )
                         )
+
+                        val photosRequest = PhotosRequest(
+                            identityCardRequests
+                        )
+
+                        verifyIdentityCard(photosRequest)
                     }
                     1 -> {
-                        requests.add(
+                        identityCardRequests.add(
                             PhotoRequest(
                                 Features(IDENTITY_CARD_BACK_DETECTION),
                                 Image(getBase64FromImage(photos.get(position)))
                             )
                         )
+
+                        val photosRequest = PhotosRequest(
+                            identityCardRequests
+                        )
+
+                        verifyIdentityCard(photosRequest)
                     }
                     2 -> {
-                        requests.add(
-                            PhotoRequest(
-                                Features(FACE_DETECTION),
-                                Image(getBase64FromImage(photos.get(position)))
+                        val verifyFaceRequests = VerifyFaceRequest(
+                            "SYNC",
+                            listOf(
+                                ImagesRequest(
+                                    listOf(
+                                        ImageRequest(
+                                            Image(
+                                                getBase64FromImage(photos.get(0))
+                                            )
+                                        ),
+                                        ImageRequest(
+                                            Image(
+                                                getBase64FromImage(photos.get(2))
+                                            )
+                                        )
+                                    )
+                                )
                             )
                         )
+
+                        verifyFace(verifyFaceRequests)
+                    }
+                    else -> {
+                        return@withContext
                     }
                 }
-
-                val photosRequest = PhotosRequest(
-                    requests
-                )
-
-                getDataFromServer(photosRequest)
             }
         }
     }
 
     @SuppressLint("CheckResult")
-    fun getDataFromServer(photosRequest: PhotosRequest) {
+    fun verifyIdentityCard(photosRequest: PhotosRequest) {
         val headers = mutableMapOf<String, String>()
         headers.put(HEADER, HEADER_KEY)
         apiService.getDetailsFromPhotos(headers, photosRequest)
@@ -118,7 +140,7 @@ class GetPhotoViewModel : ViewModel() {
             .observeOn(AndroidSchedulers.mainThread())
             .subscribe(
                 { result ->
-                    handleResponse(result)
+                    handleIdentityCardResponse(result)
                 },
                 { error ->
                     println(error.message)
@@ -126,11 +148,36 @@ class GetPhotoViewModel : ViewModel() {
             )
     }
 
-    private fun handleResponse(result: PhotosResponse) {
-        responses.addAll(result.response)
+    @SuppressLint("CheckResult")
+    fun verifyFace(verifyFaceRequest: VerifyFaceRequest) {
+        val headers = mutableMapOf<String, String>()
+        headers.put(HEADER, HEADER_KEY)
+        apiService.verifyFace(headers, verifyFaceRequest)
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe(
+                { result ->
+                    handleVerifyFaceResponse(result)
+                },
+                { error ->
+                    println(error.message)
+                }
+            )
+    }
+
+    private fun handleIdentityCardResponse(result: PhotosResponse) {
+        verifyIdentityCardResponses.addAll(result.response)
 
         if (isVerifyDetailsFragment) {
-            photosResponse.postValue(PhotosResponse(responses))
+            verifyIdentityCard.postValue(PhotosResponse(verifyIdentityCardResponses))
+        }
+    }
+
+    private fun handleVerifyFaceResponse(result: VerifyFaceResponse) {
+        verifyFaceResponse.responses = result.responses
+
+        if (isVerifyDetailsFragment) {
+            verifyIdentityCard.postValue(PhotosResponse(verifyIdentityCardResponses))
         }
     }
 
@@ -149,17 +196,20 @@ class GetPhotoViewModel : ViewModel() {
         }
         isTakingPhoto = true
 
+        scanIdentificationWaitForRequest.postValue(true)
         imageCapture.takePicture(executor, object : ImageCapture.OnImageCapturedCallback() {
             @SuppressLint("UnsafeExperimentalUsageError")
             override fun onCaptureSuccess(image: ImageProxy) {
                 Log.d("QH", "Capture success")
                 isTakingPhoto = false
                 cropImage(image.image?.toBitmap())
+                scanIdentificationWaitForRequest.postValue(false)
             }
 
             override fun onError(exception: ImageCaptureException) {
                 super.onError(exception)
                 isTakingPhoto = false
+                scanIdentificationWaitForRequest.postValue(false)
                 exception.printStackTrace()
             }
         })
@@ -182,14 +232,14 @@ class GetPhotoViewModel : ViewModel() {
                     println(error.message)
                     recording = false
                     scanFaceResult.postValue(0f)
-                    scanWaitForRequest.postValue(false)
+                    scanFaceWaitForRequest.postValue(false)
                 }
             )
     }
 
     fun handleFaceScan(result: List<ScanFaceResponse>) {
         scanFaceResult.postValue(result.get(0).faceResponse.liveness)
-        scanWaitForRequest.postValue(false)
+        scanFaceWaitForRequest.postValue(false)
     }
 
     @SuppressLint("RestrictedApi")
@@ -199,18 +249,25 @@ class GetPhotoViewModel : ViewModel() {
                 recording = true
 
                 println("Start")
-                videoCapture.startRecording(file, executor, object : VideoCapture.OnVideoSavedCallback {
-                    override fun onVideoSaved(file: File) {
-                        println("onVideoSaved")
-                        getFramesFromVideo(file)
-                    }
+                videoCapture.startRecording(
+                    file,
+                    executor,
+                    object : VideoCapture.OnVideoSavedCallback {
+                        override fun onVideoSaved(file: File) {
+                            println("onVideoSaved")
+                            getFramesFromVideo(file)
+                        }
 
-                    override fun onError(videoCaptureError: Int, message: String, cause: Throwable?) {
-                        scanWaitForRequest.postValue(false)
-                        scanFaceResult.postValue(0f)
-                    }
+                        override fun onError(
+                            videoCaptureError: Int,
+                            message: String,
+                            cause: Throwable?
+                        ) {
+                            scanFaceWaitForRequest.postValue(false)
+                            scanFaceResult.postValue(0f)
+                        }
 
-                })
+                    })
                 delay(2500)
                 videoCapture.stopRecording()
                 println("Stop")
@@ -241,7 +298,7 @@ class GetPhotoViewModel : ViewModel() {
         try {
             var action = ""
 
-            scanWaitForRequest.postValue(true)
+            scanFaceWaitForRequest.postValue(true)
 
             when (faceStep) {
                 FACE_SMILE -> action = "SMILE"
@@ -276,7 +333,7 @@ class GetPhotoViewModel : ViewModel() {
                         MediaMetadataRetriever.OPTION_CLOSEST
                     )
                 photos.add(bitmap)
-                scanWaitForRequest.postValue(false)
+                scanFaceWaitForRequest.postValue(false)
                 takePhotoImage.postValue(bitmap)
             }
 

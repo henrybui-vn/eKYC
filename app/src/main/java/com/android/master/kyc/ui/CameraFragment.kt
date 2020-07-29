@@ -5,6 +5,7 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.activity.OnBackPressedCallback
 import androidx.annotation.NonNull
 import androidx.camera.core.*
@@ -14,12 +15,14 @@ import androidx.core.content.ContextCompat
 import androidx.core.os.bundleOf
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.LifecycleOwner
+import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import com.android.master.kyc.R
 import com.android.master.kyc.extension.createSharedViewModel
 import com.android.master.kyc.ui.dialog.GuideDialogFragment
 import com.android.master.kyc.utils.EXTRA_1
 import com.android.master.kyc.utils.EXTRA_2
+import com.android.master.kyc.utils.TYPE_LOADING
 import com.android.master.kyc.utils.TYPE_PASSPORT
 import com.google.common.util.concurrent.ListenableFuture
 import kotlinx.android.synthetic.main.camera_fragment.*
@@ -59,37 +62,45 @@ class CameraFragment : Fragment() {
     }
 
     private fun initUI() {
-        nextStep.setOnClickListener {
-            if (viewModel.takingPhotoFinished) {
-                if (viewModel.isTakingFrontPhoto && typeData != TYPE_PASSPORT) {
-                    viewModel.isTakingFrontPhoto = false
 
-                    title.text = "Mặt sau"
-                    viewModel.photos.add(viewModel.photo)
-                    layoutTakePhoto.visibility = View.VISIBLE
-                    layoutConfirmPhoto.visibility = View.GONE
-                    progressTakeImage.visibility = View.GONE
-                    viewModel.getDetailsFromPhotos(0)
-                } else {
-                    viewModel.photos.add(viewModel.photo)
-                    viewModel.getDetailsFromPhotos(1)
-                    val bundle = bundleOf(
-                        EXTRA_1 to typeData,
-                        EXTRA_2 to viewModel.photos
-                    )
-                    camera.releasePointerCapture()
-                    findNavController().navigate(R.id.faceScanFragment, bundle)
-                }
-            }
-        }
     }
 
     private fun observeChanges() {
+        val dialog = GuideDialogFragment(TYPE_LOADING, "Vui lòng đợi kiểm tra hình ảnh")
+
+        viewModel.scanIdentificationWaitForRequest.observe(viewLifecycleOwner, Observer {
+            if (it) {
+                dialog.show(requireFragmentManager(), "Guide")
+            } else {
+                dialog.dismiss()
+            }
+        })
+
         viewModel.takeImage.observe(viewLifecycleOwner, androidx.lifecycle.Observer {
-            Log.d("QH", "Init photo");
-            progressTakeImage.visibility = View.GONE
             viewModel.takingPhotoFinished = true
-            imgCaptured.setImageBitmap(it)
+
+            if (viewModel.isTakingFrontPhoto && typeData != TYPE_PASSPORT) {
+                viewModel.isTakingFrontPhoto = false
+
+                Toast.makeText(
+                    context,
+                    "Chụp mặt trước hoàn thành. \nVui lòng chụp mặt sau của giấy tờ!",
+                    Toast.LENGTH_SHORT
+                ).show()
+                title.text = "Mặt sau"
+                viewModel.photos.add(viewModel.photo)
+                layoutTakePhoto.visibility = View.VISIBLE
+                viewModel.getDetailsFromPhotos(0)
+            } else {
+                viewModel.photos.add(viewModel.photo)
+                viewModel.getDetailsFromPhotos(1)
+                val bundle = bundleOf(
+                    EXTRA_1 to typeData,
+                    EXTRA_2 to viewModel.photos
+                )
+                camera.releasePointerCapture()
+                findNavController().navigate(R.id.faceScanFragment, bundle)
+            }
         })
     }
 
@@ -108,7 +119,7 @@ class CameraFragment : Fragment() {
         }, ContextCompat.getMainExecutor(requireContext()))
     }
 
-    fun bindPreview(@NonNull cameraProvider: ProcessCameraProvider) {
+    private fun bindPreview(@NonNull cameraProvider: ProcessCameraProvider) {
         val preview = Preview.Builder()
             .build()
         val cameraSelector = CameraSelector.Builder()
@@ -141,10 +152,6 @@ class CameraFragment : Fragment() {
 
         captureImg.setOnClickListener(object : View.OnClickListener {
             override fun onClick(v: View?) {
-                imgCaptured.setImageBitmap(null)
-                layoutTakePhoto.visibility = View.GONE
-                layoutConfirmPhoto.visibility = View.VISIBLE
-                progressTakeImage.visibility = View.VISIBLE
                 viewModel.takePhoto()
             }
         })
