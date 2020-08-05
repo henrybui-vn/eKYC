@@ -60,11 +60,6 @@ class FaceScanFragment : Fragment() {
     private fun initUI() {
         setTitle()
 
-        //Spin border
-        val rotation = AnimationUtils.loadAnimation(requireActivity(), R.anim.image_spin)
-        rotation.setFillAfter(true)
-        imgBorderCamera.startAnimation(rotation)
-
         captureImg.setOnClickListener(object : View.OnClickListener {
             override fun onClick(v: View?) {
                 if (viewModel.recording) {
@@ -115,6 +110,10 @@ class FaceScanFragment : Fragment() {
                 setTitle()
             }
         })
+
+        viewModel.progress.observe(viewLifecycleOwner, Observer {
+            progressCircular.progress = it
+        })
     }
 
     fun setTitle() {
@@ -128,9 +127,24 @@ class FaceScanFragment : Fragment() {
     private fun notifyUser() {
         var content = ""
         when (viewModel.faceStep) {
-            FACE_SMILE -> content = "Quét thành công vui lòng quét bước tiếp theo!"
-            FACE_CLOSE_EYE -> content = "Quét thành công vui lòng quét bước tiếp theo!"
-            FACE_NORMAL -> content = "Quét hoàn thành!"
+            FACE_SMILE -> {
+                content = "Quét thành công vui lòng quét bước tiếp theo!"
+                viewModel.updateProgress(33)
+            }
+            FACE_CLOSE_EYE -> {
+                content = "Quét thành công vui lòng quét bước tiếp theo!"
+                viewModel.updateProgress(33)
+            }
+            FACE_NORMAL -> {
+                content = "Quét hoàn thành!"
+                viewModel.updateProgress(34)
+//                imgBorderCamera.visibility = View.VISIBLE
+//
+//                //Spin border
+//                val rotation = AnimationUtils.loadAnimation(requireActivity(), R.anim.image_spin)
+//                rotation.setFillAfter(true)
+//                imgBorderCamera.startAnimation(rotation)
+            }
         }
         Toast.makeText(requireContext(), content, Toast.LENGTH_SHORT).show()
     }

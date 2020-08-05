@@ -5,5 +5,7 @@ import com.google.gson.annotations.SerializedName
 
 data class ImageRequest(
     @SerializedName("image")
-    var image: Image
+    var image: Image,
+    @SerializedName("cropCard")
+    var cropCard: Boolean = false
 )

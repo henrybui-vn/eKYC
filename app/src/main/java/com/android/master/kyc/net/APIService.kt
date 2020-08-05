@@ -17,7 +17,7 @@ interface APIService {
         @Body photosRequest: PhotosRequest
     ): Observable<PhotosResponse>
 
-    @POST("/ekyc/v1/images:annotate")
+    @POST("/ekyc/v1/images:verify")
     fun verifyFace(
         @HeaderMap header: Map<String, String>,
         @Body verifyFaceRequest: VerifyFaceRequest

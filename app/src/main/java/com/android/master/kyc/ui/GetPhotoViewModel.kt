@@ -44,6 +44,9 @@ class GetPhotoViewModel : ViewModel() {
     val scanFaceResult = MutableLiveData<Float>()
     val scanIdentificationWaitForRequest = MutableLiveData<Boolean>()
     val scanFaceWaitForRequest = MutableLiveData<Boolean>()
+    val progress = MutableLiveData<Int>()
+    val verifyIdentityCard = MutableLiveData<PhotosResponse>()
+    val verifyFace = MutableLiveData<VerifyFaceResponse>()
 
     var photo: Bitmap? = null
     var facePhoto: Bitmap? = null
@@ -52,20 +55,19 @@ class GetPhotoViewModel : ViewModel() {
     val photos = mutableListOf<Bitmap?>()
     val verifyIdentityCardResponses = mutableListOf<PhotoResponse>()
     val verifyFaceResponse = VerifyFaceResponse()
+    var progressScanFace = 0
 
     var isVerifyDetailsFragment = false
     var isInitVerifyDetailsData = false
     private var isTakingPhoto = false
     var takingPhotoFinished = false
     var isTakingFrontPhoto = true
+
     private val executor: Executor = Executors.newSingleThreadExecutor()
     lateinit var imageCapture: ImageCapture
     lateinit var videoCapture: VideoCapture
 
     val apiService: APIService by KoinJavaComponent.inject(APIService::class.java)
-
-    val verifyIdentityCard = MutableLiveData<PhotosResponse>()
-    val verifyFace = MutableLiveData<VerifyFaceResponse>()
 
     fun getDetailsFromPhotos(position: Int) {
         viewModelScope.launch {
@@ -177,7 +179,7 @@ class GetPhotoViewModel : ViewModel() {
         verifyFaceResponse.responses = result.responses
 
         if (isVerifyDetailsFragment) {
-            verifyIdentityCard.postValue(PhotosResponse(verifyIdentityCardResponses))
+            verifyFace.postValue(verifyFaceResponse)
         }
     }
 
@@ -366,5 +368,17 @@ class GetPhotoViewModel : ViewModel() {
         // Create a media file name
         val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())
         return File("${mediaStorageDir.path}${File.separator}VID_$timeStamp.mp4")
+    }
+
+    fun updateProgress(increaseProgress: Int) {
+        viewModelScope.launch {
+            withContext(Dispatchers.IO) {
+                for (i in 1..increaseProgress) {
+                    progressScanFace += 1
+                    progress.postValue(progressScanFace)
+                    delay(50)
+                }
+            }
+        }
     }
 }
