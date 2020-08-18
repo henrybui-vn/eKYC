@@ -1,12 +1,10 @@
 package com.android.master.kyc.ui
 
 import android.annotation.SuppressLint
-import android.hardware.Camera
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.view.animation.AnimationUtils
 import android.widget.Toast
 import androidx.annotation.NonNull
 import androidx.camera.core.CameraSelector
@@ -24,6 +22,7 @@ import com.android.master.kyc.extension.createSharedViewModel
 import com.android.master.kyc.ui.dialog.GuideDialogFragment
 import com.android.master.kyc.utils.*
 import com.google.common.util.concurrent.ListenableFuture
+import kotlinx.android.synthetic.main.camera_fragment.*
 import kotlinx.android.synthetic.main.camera_fragment.captureImg
 import kotlinx.android.synthetic.main.face_scan_fragment.*
 import kotlinx.android.synthetic.main.face_scan_fragment.title
@@ -62,15 +61,13 @@ class FaceScanFragment : Fragment() {
 
         captureImg.setOnClickListener(object : View.OnClickListener {
             override fun onClick(v: View?) {
-                if (viewModel.recording) {
+                if (viewModel.isScanning) {
                     return
                 }
 
                 captureImg.visibility = View.GONE
                 setTitle()
-                val file = viewModel.getOutputMediaFile()
-                println("Path: " + file.path)
-                viewModel.recordVideo(file)
+                viewModel.scanFace()
             }
         })
     }
@@ -113,6 +110,12 @@ class FaceScanFragment : Fragment() {
 
         viewModel.progress.observe(viewLifecycleOwner, Observer {
             progressCircular.progress = it
+        })
+
+        viewModel.scanFaceAction.observe(viewLifecycleOwner, Observer {
+            if (it) {
+                viewModel.scanFaceBitmap = cameraView.bitmap
+            }
         })
     }
 

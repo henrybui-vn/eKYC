@@ -1,7 +1,6 @@
 package com.android.master.kyc.ui
 
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -66,16 +65,6 @@ class CameraFragment : Fragment() {
     }
 
     private fun observeChanges() {
-        val dialog = GuideDialogFragment(TYPE_LOADING, "Vui lòng đợi kiểm tra hình ảnh")
-
-        viewModel.scanIdentificationWaitForRequest.observe(viewLifecycleOwner, Observer {
-            if (it) {
-                dialog.show(requireFragmentManager(), "Guide")
-            } else {
-                dialog.dismiss()
-            }
-        })
-
         viewModel.takeImage.observe(viewLifecycleOwner, androidx.lifecycle.Observer {
             viewModel.takingPhotoFinished = true
 
@@ -98,7 +87,7 @@ class CameraFragment : Fragment() {
                     EXTRA_1 to typeData,
                     EXTRA_2 to viewModel.photos
                 )
-                camera.releasePointerCapture()
+                previewView.releasePointerCapture()
                 findNavController().navigate(R.id.faceScanFragment, bundle)
             }
         })
@@ -141,7 +130,7 @@ class CameraFragment : Fragment() {
         viewModel.imageCapture = builder
             .setTargetRotation(requireActivity().windowManager.defaultDisplay.rotation)
             .build()
-        preview.setSurfaceProvider(camera.createSurfaceProvider())
+        preview.setSurfaceProvider(previewView.createSurfaceProvider())
         val camera: Camera = cameraProvider.bindToLifecycle(
             (this as LifecycleOwner),
             cameraSelector,
@@ -152,7 +141,7 @@ class CameraFragment : Fragment() {
 
         captureImg.setOnClickListener(object : View.OnClickListener {
             override fun onClick(v: View?) {
-                viewModel.takePhoto()
+                viewModel.takePhoto(previewView.bitmap)
             }
         })
     }

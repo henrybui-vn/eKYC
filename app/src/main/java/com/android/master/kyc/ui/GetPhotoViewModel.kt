@@ -2,18 +2,13 @@ package com.android.master.kyc.ui
 
 import android.annotation.SuppressLint
 import android.graphics.Bitmap
-import android.media.MediaMetadataRetriever
-import android.os.Environment
 import android.util.Base64
 import android.util.Log
 import androidx.camera.core.ImageCapture
-import androidx.camera.core.ImageCaptureException
-import androidx.camera.core.ImageProxy
 import androidx.camera.core.VideoCapture
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.android.master.kyc.extension.toBitmap
 import com.android.master.kyc.model.Features
 import com.android.master.kyc.model.Image
 import com.android.master.kyc.net.APIService
@@ -31,27 +26,23 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.koin.java.KoinJavaComponent
 import java.io.ByteArrayOutputStream
-import java.io.File
-import java.text.SimpleDateFormat
-import java.util.*
-import java.util.concurrent.Executor
-import java.util.concurrent.Executors
 
 
 class GetPhotoViewModel : ViewModel() {
     val takeImage = MutableLiveData<Bitmap>()
     val takePhotoImage = MutableLiveData<Bitmap>()
     val scanFaceResult = MutableLiveData<Float>()
-    val scanIdentificationWaitForRequest = MutableLiveData<Boolean>()
     val scanFaceWaitForRequest = MutableLiveData<Boolean>()
     val progress = MutableLiveData<Int>()
     val verifyIdentityCard = MutableLiveData<PhotosResponse>()
     val verifyFace = MutableLiveData<VerifyFaceResponse>()
+    val scanFaceAction = MutableLiveData<Boolean>()
 
     var photo: Bitmap? = null
     var facePhoto: Bitmap? = null
+    var scanFaceBitmap: Bitmap? = null
     var faceStep = FACE_SMILE
-    var recording = false
+    var isScanning = false
     val photos = mutableListOf<Bitmap?>()
     val verifyIdentityCardResponses = mutableListOf<PhotoResponse>()
     val verifyFaceResponse = VerifyFaceResponse()
@@ -63,7 +54,6 @@ class GetPhotoViewModel : ViewModel() {
     var takingPhotoFinished = false
     var isTakingFrontPhoto = true
 
-    private val executor: Executor = Executors.newSingleThreadExecutor()
     lateinit var imageCapture: ImageCapture
     lateinit var videoCapture: VideoCapture
 
@@ -192,29 +182,14 @@ class GetPhotoViewModel : ViewModel() {
         return encodedImage
     }
 
-    fun takePhoto() {
+    fun takePhoto(bitmap: Bitmap?) {
         if (isTakingPhoto) {
             return
         }
         isTakingPhoto = true
-
-        scanIdentificationWaitForRequest.postValue(true)
-        imageCapture.takePicture(executor, object : ImageCapture.OnImageCapturedCallback() {
-            @SuppressLint("UnsafeExperimentalUsageError")
-            override fun onCaptureSuccess(image: ImageProxy) {
-                Log.d("QH", "Capture success")
-                isTakingPhoto = false
-                cropImage(image.image?.toBitmap())
-                scanIdentificationWaitForRequest.postValue(false)
-            }
-
-            override fun onError(exception: ImageCaptureException) {
-                super.onError(exception)
-                isTakingPhoto = false
-                scanIdentificationWaitForRequest.postValue(false)
-                exception.printStackTrace()
-            }
-        })
+        cropImage(bitmap)
+        Log.d("QH", "Capture success")
+        isTakingPhoto = false
     }
 
     @SuppressLint("CheckResult")
@@ -228,11 +203,11 @@ class GetPhotoViewModel : ViewModel() {
             .subscribe(
                 { result ->
                     handleFaceScan(result.response)
-                    recording = false
+                    isScanning = false
                 },
                 { error ->
                     println(error.message)
-                    recording = false
+                    isScanning = false
                     scanFaceResult.postValue(0f)
                     scanFaceWaitForRequest.postValue(false)
                 }
@@ -244,34 +219,43 @@ class GetPhotoViewModel : ViewModel() {
         scanFaceWaitForRequest.postValue(false)
     }
 
-    @SuppressLint("RestrictedApi")
-    fun recordVideo(file: File) {
+    fun scanFace() {
         viewModelScope.launch {
             withContext(Dispatchers.IO) {
-                recording = true
+                isScanning = true
 
                 println("Start")
-                videoCapture.startRecording(
-                    file,
-                    executor,
-                    object : VideoCapture.OnVideoSavedCallback {
-                        override fun onVideoSaved(file: File) {
-                            println("onVideoSaved")
-                            getFramesFromVideo(file)
-                        }
 
-                        override fun onError(
-                            videoCaptureError: Int,
-                            message: String,
-                            cause: Throwable?
-                        ) {
-                            scanFaceWaitForRequest.postValue(false)
-                            scanFaceResult.postValue(0f)
-                        }
+                var action = ""
 
-                    })
-                delay(2500)
-                videoCapture.stopRecording()
+                scanFaceWaitForRequest.postValue(true)
+
+                when (faceStep) {
+                    FACE_SMILE -> action = "SMILE"
+                    FACE_CLOSE_EYE -> action = "CLOSE_LEFT_EYE"
+                    FACE_NORMAL -> action = "NORMAL"
+                }
+
+                val images = mutableListOf<Image>()
+
+                for (i in 1..15) {
+                    scanFaceAction.postValue(true)
+                    delay(150)
+                    images.add(
+                        Image(
+                            getBase64FromImage(scanFaceBitmap)
+                        )
+                    )
+                }
+
+                if (action != "NORMAL") {
+                    checkFace(FaceRequest(action, images))
+                } else {
+                    photos.add(scanFaceBitmap)
+                    scanFaceWaitForRequest.postValue(false)
+                    takePhotoImage.postValue(scanFaceBitmap)
+                }
+
                 println("Stop")
             }
         }
@@ -294,80 +278,6 @@ class GetPhotoViewModel : ViewModel() {
                 e.printStackTrace()
             }
         }
-    }
-
-    fun getFramesFromVideo(file: File) {
-        try {
-            var action = ""
-
-            scanFaceWaitForRequest.postValue(true)
-
-            when (faceStep) {
-                FACE_SMILE -> action = "SMILE"
-                FACE_CLOSE_EYE -> action = "CLOSE_LEFT_EYE"
-                FACE_NORMAL -> action = "NORMAL"
-            }
-
-            val images = mutableListOf<Image>()
-            val retriever = MediaMetadataRetriever()
-
-            retriever.setDataSource(file.getAbsolutePath());
-
-            for (i in 1..15) {
-                val bitmap =
-                    retriever.getFrameAtTime(
-                        (2000000 / i).toLong(),
-                        MediaMetadataRetriever.OPTION_CLOSEST
-                    )
-                images.add(
-                    Image(
-                        getBase64FromImage(bitmap)
-                    )
-                )
-            }
-
-            if (action != "NORMAL") {
-                checkFace(FaceRequest(action, images))
-            } else {
-                val bitmap =
-                    retriever.getFrameAtTime(
-                        (1000000).toLong(),
-                        MediaMetadataRetriever.OPTION_CLOSEST
-                    )
-                photos.add(bitmap)
-                scanFaceWaitForRequest.postValue(false)
-                takePhotoImage.postValue(bitmap)
-            }
-
-            file.delete()
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-    }
-
-    /** Create a File for saving an image or video */
-    @SuppressLint("SimpleDateFormat")
-    fun getOutputMediaFile(): File {
-        // To be safe, you should check that the SDCard is mounted
-        // using Environment.getExternalStorageState() before doing this.
-
-        val mediaStorageDir = File(
-            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
-            "MyCameraApp"
-        )
-        // This location works best if you want the created images to be shared
-        // between applications and persist after your app has been uninstalled.
-
-        // Create the storage directory if it does not exist
-        mediaStorageDir.apply {
-            if (!exists()) {
-                mkdirs()
-            }
-        }
-
-        // Create a media file name
-        val timeStamp = SimpleDateFormat("yyyyMMdd_HHmmss").format(Date())
-        return File("${mediaStorageDir.path}${File.separator}VID_$timeStamp.mp4")
     }
 
     fun updateProgress(increaseProgress: Int) {
