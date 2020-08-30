@@ -19,10 +19,7 @@ import androidx.navigation.fragment.findNavController
 import com.android.master.kyc.R
 import com.android.master.kyc.extension.createSharedViewModel
 import com.android.master.kyc.ui.dialog.GuideDialogFragment
-import com.android.master.kyc.utils.EXTRA_1
-import com.android.master.kyc.utils.EXTRA_2
-import com.android.master.kyc.utils.TYPE_LOADING
-import com.android.master.kyc.utils.TYPE_PASSPORT
+import com.android.master.kyc.utils.*
 import com.google.common.util.concurrent.ListenableFuture
 import kotlinx.android.synthetic.main.camera_fragment.*
 import java.util.concurrent.ExecutionException
@@ -42,7 +39,7 @@ class CameraFragment : Fragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         val dialog = GuideDialogFragment(typeData)
-        dialog.show(requireFragmentManager(), "Guide")
+        dialog.show(requireFragmentManager(), DIALOG_GUIDE)
         viewModel = createSharedViewModel(requireActivity(), GetPhotoViewModel::class.java)
 
         startCamera()
@@ -73,10 +70,10 @@ class CameraFragment : Fragment() {
 
                 Toast.makeText(
                     context,
-                    "Chụp mặt trước hoàn thành. \nVui lòng chụp mặt sau của giấy tờ!",
+                    getString(R.string.label_finish_scan_front),
                     Toast.LENGTH_SHORT
                 ).show()
-                title.text = "Mặt sau"
+                title.text = getString(R.string.label_backside)
                 viewModel.photos.add(viewModel.photo)
                 layoutTakePhoto.visibility = View.VISIBLE
                 viewModel.getDetailsFromPhotos(0)

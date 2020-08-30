@@ -16,7 +16,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:padding="20dp"
-            android:text="Thông tin cá nhân"
+            android:text="@string/label_personal_information"
             android:textAlignment="center"
             android:textColor="@color/colorPrimary"
             android:textSize="24sp"
@@ -30,7 +30,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Giấy tờ"
+                android:text="@string/label_paper"
                 android:textColor="@color/colorPrimary" />
 
             <ProgressBar
@@ -56,7 +56,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Số CMND"
+                android:text="@string/label_id"
                 android:textColor="@color/colorPrimary" />
 
             <ProgressBar
@@ -82,7 +82,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Tên"
+                android:text="@string/label_name"
                 android:textColor="@color/colorPrimary" />
 
             <ProgressBar
@@ -108,7 +108,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Ngày sinh"
+                android:text="@string/label_birthday"
                 android:textColor="@color/colorPrimary" />
 
             <ProgressBar
@@ -134,7 +134,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Quê quán"
+                android:text="@string/label_birthplace"
                 android:textColor="@color/colorPrimary" />
 
             <ProgressBar
@@ -158,12 +158,12 @@
             android:padding="20dp">
 
             <TextView
-                android:id="@+id/tvHKTT"
+                android:id="@+id/tvIdentityAddr"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 app:layout_constraintStart_toStartOf="parent"
                 app:layout_constraintTop_toTopOf="parent"
-                android:text="Hộ khẩu thường trú"
+                android:text="@string/label_identity_addr"
                 android:textColor="@color/colorPrimary" />
 
             <ProgressBar
@@ -179,7 +179,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginStart="10dp"
-                app:layout_constraintStart_toEndOf="@id/tvHKTT"
+                app:layout_constraintStart_toEndOf="@id/tvIdentityAddr"
                 android:textColor="@color/colorPrimary"
                 app:layout_constraintEnd_toEndOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
@@ -193,7 +193,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Nơi cấp"
+                android:text="@string/label_nc"
                 android:textColor="@color/colorPrimary" />
 
             <ProgressBar
@@ -219,7 +219,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Ngày cấp"
+                android:text="@string/label_provide_date"
                 android:textColor="@color/colorPrimary" />
 
             <ProgressBar
@@ -245,7 +245,7 @@
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="So sánh khuôn mặt"
+                android:text="@string/label_face_compare"
                 android:textColor="@color/colorPrimary" />
 
             <ProgressBar

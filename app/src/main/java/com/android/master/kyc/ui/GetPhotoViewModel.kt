@@ -232,8 +232,14 @@ class GetPhotoViewModel : ViewModel() {
 
                 when (faceStep) {
                     FACE_SMILE -> action = "SMILE"
-                    FACE_CLOSE_EYE -> action = "CLOSE_LEFT_EYE"
-                    FACE_NORMAL -> action = "NORMAL"
+                    FACE_CLOSE_EYE -> {
+                        delay(1000)
+                        action = "CLOSE_LEFT_EYE"
+                    }
+                    FACE_NORMAL -> {
+                        delay(1000)
+                        action = "NORMAL"
+                    }
                 }
 
                 val images = mutableListOf<Image>()

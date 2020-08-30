@@ -22,7 +22,6 @@ import com.android.master.kyc.extension.createSharedViewModel
 import com.android.master.kyc.ui.dialog.GuideDialogFragment
 import com.android.master.kyc.utils.*
 import com.google.common.util.concurrent.ListenableFuture
-import kotlinx.android.synthetic.main.camera_fragment.*
 import kotlinx.android.synthetic.main.camera_fragment.captureImg
 import kotlinx.android.synthetic.main.face_scan_fragment.*
 import kotlinx.android.synthetic.main.face_scan_fragment.title
@@ -45,7 +44,7 @@ class FaceScanFragment : Fragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
         val dialog = GuideDialogFragment(TYPE_FACE_ID)
-        dialog.show(requireFragmentManager(), "Guide")
+        dialog.show(requireFragmentManager(), DIALOG_GUIDE)
 
         viewModel = createSharedViewModel(requireActivity(), GetPhotoViewModel::class.java)
 
@@ -73,7 +72,7 @@ class FaceScanFragment : Fragment() {
     }
 
     private fun observeChanges() {
-        val dialog = GuideDialogFragment(TYPE_LOADING, "Vui lòng đợi kiểm tra khuôn mặt")
+        val dialog = GuideDialogFragment(TYPE_LOADING, getString(R.string.label_require_wait_for_scan))
 
         viewModel.takePhotoImage.observe(viewLifecycleOwner, Observer {
             notifyUser()
@@ -90,21 +89,25 @@ class FaceScanFragment : Fragment() {
 
         viewModel.scanFaceWaitForRequest.observe(viewLifecycleOwner, Observer {
             if (it) {
-                dialog.show(requireFragmentManager(), "Guide")
+                dialog.show(requireFragmentManager(), DIALOG_GUIDE)
             } else {
                 dialog.dismiss()
             }
         })
 
         viewModel.scanFaceResult.observe(viewLifecycleOwner, Observer {
-            captureImg.visibility = View.VISIBLE
             if (it < 0f) {
-                Toast.makeText(requireContext(), "Quét lỗi vui lòng quét lại!", Toast.LENGTH_LONG)
-                    .show()
+                captureImg.visibility = View.VISIBLE
+                Toast.makeText(
+                    requireContext(),
+                    getString(R.string.label_require_rescan),
+                    Toast.LENGTH_LONG
+                ).show()
             } else {
                 notifyUser()
                 viewModel.faceStep++
                 setTitle()
+                viewModel.scanFace()
             }
         })
 
@@ -121,9 +124,9 @@ class FaceScanFragment : Fragment() {
 
     fun setTitle() {
         when (viewModel.faceStep) {
-            FACE_SMILE -> title.text = "Vui lòng cười"
-            FACE_CLOSE_EYE -> title.text = "Vui lòng nhắm mắt trái"
-            FACE_NORMAL -> title.text = "Vui lòng nhìn thẳng"
+            FACE_SMILE -> title.text = getString(R.string.label_require_smile)
+            FACE_CLOSE_EYE -> title.text = getString(R.string.label_require_close_eye)
+            FACE_NORMAL -> title.text = getString(R.string.label_require_straight)
         }
     }
 
@@ -131,15 +134,15 @@ class FaceScanFragment : Fragment() {
         var content = ""
         when (viewModel.faceStep) {
             FACE_SMILE -> {
-                content = "Quét thành công vui lòng quét bước tiếp theo!"
+                content = getString(R.string.label_require_scan_next_step)
                 viewModel.updateProgress(33)
             }
             FACE_CLOSE_EYE -> {
-                content = "Quét thành công vui lòng quét bước tiếp theo!"
+                content = getString(R.string.label_require_scan_next_step)
                 viewModel.updateProgress(33)
             }
             FACE_NORMAL -> {
-                content = "Quét hoàn thành!"
+                content = getString(R.string.label_finish_scan)
                 viewModel.updateProgress(34)
 //                imgBorderCamera.visibility = View.VISIBLE
 //

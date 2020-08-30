@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">eKYC</string>
+    <string name="label_require_rescan">Quét lỗi vui lòng quét lại!</string>
+    <string name="label_require_scan_next_step">Quét thành công vui lòng quét bước tiếp theo!</string>
+    <string name="label_finish_scan">Quét hoàn thành!</string>
+    <string name="label_require_smile">Vui lòng cười</string>
+    <string name="label_require_close_eye">Vui lòng nhắm mắt trái</string>
+    <string name="label_require_straight">Vui lòng nhìn thẳng</string>
+    <string name="label_require_wait_for_scan">Vui lòng đợi kiểm tra khuôn mặt</string>
+    <string name="label_finish_scan_front">Chụp mặt trước hoàn thành. \nVui lòng chụp mặt sau của giấy tờ!</string>
+    <string name="label_backside">Mặt sau</string>
+    <string name="label_identity_card">Chứng minh thư, Thẻ căn cước</string>
+    <string name="label_passport">Hộ chiếu</string>
+    <string name="label_military_card">Chứng minh thư quân đội</string>
+    <string name="label_license_driver">Bằng lái xe</string>
+    <string name="label_guide_take_photo">Xin vui lòng\nĐặt giấy tờ vừa khung hình,\n chụp đủ ánh sáng và rõ nét</string>
+    <string name="label_frontside">Mặt trước</string>
+    <string name="label_verify">Xác thực giấy tờ</string>
+    <string name="label_guide_verify">Chọn giấy tờ bạn muốn xác thực</string>
+    <string name="label_personal_information">Thông tin cá nhân</string>
+    <string name="label_paper">Giấy tờ</string>
+    <string name="label_id">Số CMND</string>
+    <string name="label_name">Tên</string>
+    <string name="label_birthday">Ngày sinh</string>
+    <string name="label_birthplace">Quê quán</string>
+    <string name="label_identity_addr">Hộ khẩu thường trú</string>
+    <string name="label_nc">Nơi cấp</string>
+    <string name="label_provide_date">Ngày cấp</string>
+    <string name="label_face_compare">So sánh khuôn mặt</string>
+    <string name="label_compare_face">Xác thực ba góc độ của khuôn mặt</string>
+    <string name="label_comapre_paper">Xác thực mặt trước, mặt sau giấy tờ</string>
+    <string name="label_guide_scan_face">Xin vui lòng\nĐưa khuôn mặt vừa khung hình,\n chụp đủ ánh sáng và rõ nét</string>
+</resources>

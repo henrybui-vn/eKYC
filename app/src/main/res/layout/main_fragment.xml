@@ -29,15 +29,15 @@
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Xác thực giấy tờ"
+                    android:text="@string/label_verify"
                     android:textAlignment="center"
                     android:textColor="@android:color/white"
-                    android:textSize="20dp" />
+                    android:textSize="20sp" />
 
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Chọn giấy tờ bạn muốn xác thực"
+                    android:text="@string/label_guide_verify"
                     android:textAlignment="center"
                     android:textColor="@android:color/white" />
             </LinearLayout>

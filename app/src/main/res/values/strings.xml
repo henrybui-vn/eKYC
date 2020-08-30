@@ -1,4 +1,33 @@
 <resources>
-    <string name="app_name">KYC</string>
-    <string name="label_verify_face_description">Verify three part of face</string>
+    <string name="app_name">eKYC</string>
+    <string name="label_require_rescan">Scanning failed. Please rescan!</string>
+    <string name="label_require_scan_next_step">Scanning successful. Please scan next step!</string>
+    <string name="label_finish_scan">Scanning finish!</string>
+    <string name="label_require_smile">Please smile</string>
+    <string name="label_require_close_eye">Please close left eye</string>
+    <string name="label_require_straight">Please look straight</string>
+    <string name="label_require_wait_for_scan">Please wait for scanning face</string>
+    <string name="label_finish_scan_front">Taking frontside finish. \nPlease take backside of your paper!</string>
+    <string name="label_backside">Backside</string>
+    <string name="label_identity_card">Identity card</string>
+    <string name="label_passport">Passport</string>
+    <string name="label_military_card">Military card</string>
+    <string name="label_license_driver">Driver license</string>
+    <string name="label_guide_take_photo">Please place your paper fit to the picture frame,\n Take image enough brightness and sharpness</string>
+    <string name="label_frontside">Frontside</string>
+    <string name="label_verify">Verify paper</string>
+    <string name="label_guide_verify">Choose paper which you want to verify</string>
+    <string name="label_personal_information">Personal Information</string>
+    <string name="label_paper">Paper</string>
+    <string name="label_id">Identity card</string>
+    <string name="label_name">Name</string>
+    <string name="label_birthday">Birthday</string>
+    <string name="label_birthplace">Birthplace</string>
+    <string name="label_identity_addr">Identity address</string>
+    <string name="label_nc">Provider</string>
+    <string name="label_provide_date">Provide date</string>
+    <string name="label_face_compare">Face comparison</string>
+    <string name="label_compare_face">Verify three part of face</string>
+    <string name="label_comapre_paper">Verify frontside and backside of paper</string>
+    <string name="label_guide_scan_face">Please bring your face fit to the picture frame,\n Take image enough brightness and sharpness</string>
 </resources>

@@ -60,7 +60,7 @@
                         android:layout_toEndOf="@id/chevron"
                         android:text="@={vh.categoryLD}"
                         android:textColor="#000000"
-                        android:textSize="16dp" />
+                        android:textSize="16sp" />
 
                     <LinearLayout
                         android:id="@+id/expand_view"
@@ -77,14 +77,14 @@
                         <TextView
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:text="Xác thực ba góc độ của khuôn mặt"
+                            android:text="@string/label_compare_face"
                             android:textColor="@color/colorPrimary" />
 
                         <TextView
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="10dp"
-                            android:text="Xác thực mặt trước, mặt sau giấy tờ"
+                            android:text="@string/label_comapre_paper"
                             android:textColor="@color/colorPrimary" />
 
                     </LinearLayout>

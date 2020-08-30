@@ -47,10 +47,10 @@ class MainFragment : Fragment() {
 
     private fun initUI() {
         //Init UI
-        val data = listOf(Category("Chứng minh thư, Thẻ căn cước"),
-            Category("Hộ chiếu"),
-            Category("Chứng minh thư quân đội"),
-            Category("Bằng lái xe")
+        val data = listOf(Category(getString(R.string.label_identity_card)),
+            Category(getString(R.string.label_passport)),
+            Category(getString(R.string.label_military_card)),
+            Category(getString(R.string.label_license_driver))
         )
         mainListAdapter = MainListAdapter(
             requireContext(),
